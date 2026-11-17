@@ -156,7 +156,7 @@
     .demo-pill { border: 1px solid var(--line-strong); border-radius: 999px; padding: 4px 10px; color: var(--muted); font-size: 12px; white-space: nowrap; }
     .range-wrap { display: flex; align-items: center; gap: 10px; }
     .window { color: var(--faint); font-family: var(--mono); font-size: 12px; }
-    .cols { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+    .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px; }
     .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
     .mini { display: flex; flex-direction: column; }
     .mini div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
@@ -189,6 +189,17 @@
     .tip strong { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
     .tip div { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; }
     .tip b { margin-left: auto; color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .tip em { color: var(--faint); font-style: normal; font-variant-numeric: tabular-nums; min-width: 46px; text-align: right; }
+    .curve svg { width: 100%; height: 220px; display: block; }
+    .curve-hits { position: absolute; left: 0; right: 0; top: 0; height: 220px; display: flex; }
+    .curve .hit { height: 100%; }
+    .curve .hit:hover, .curve .hit:focus-visible { background: linear-gradient(to right, transparent calc(50% - 0.5px), rgba(243, 239, 230, 0.45) calc(50% - 0.5px), rgba(243, 239, 230, 0.45) calc(50% + 0.5px), transparent calc(50% + 0.5px)); }
+    .kpi-more { display: none; margin-top: 8px; color: var(--faint); font-size: 12px; }
+    .kpi:hover .kpi-more, .kpi:focus-within .kpi-more { display: block; }
+    .pie-wrap { position: relative; display: inline-flex; }
+    .pie-wrap .tip { top: 4px; left: 50%; min-width: 160px; }
+    .bars > div:hover .fill { filter: brightness(1.2); }
+    .pick .quiet { display: block; font-size: 11.5px; }
     .privacy-card { margin-top: 12px; }
     .privacy-card h2 { color: var(--text); font-size: 16px; margin: 8px 0; }
     .metric-card.on { border-color: rgba(212, 196, 255, 0.55); }
@@ -519,7 +530,7 @@ const SCALE = { '24h': 0.034, '7d': 0.22, '30d': 1, '90d': 2.85 };
 const AXIS = {
   '24h': ['Yesterday 12:00', '00:00', 'Now'],
   '7d': ['Nov 11', 'Nov 14', 'Nov 17'],
-  '30d': ['Oct 18', 'Nov 2', 'Nov 17'],
+  '30d': ['Oct 19', 'Nov 2', 'Nov 17'],
   '90d': ['Aug 19', 'Oct 3', 'Nov 17'],
 };
 const PRIOR = { '24h': 'prior day', '7d': 'prior week', '30d': 'prior 30 days', '90d': 'prior 90 days' };
@@ -545,9 +556,14 @@ const PROFILES = {
     countries: [
       { name: 'United States', share: 0.28 }, { name: 'Germany', share: 0.14 }, { name: 'Brazil', share: 0.11 },
       { name: 'Nigeria', share: 0.09 }, { name: 'South Korea', share: 0.08 }, { name: 'United Kingdom', share: 0.07 },
+      { name: 'France', share: 0.06 }, { name: 'Japan', share: 0.05 },
     ],
     devices: [{ name: 'Desktop', share: 0.62 }, { name: 'Mobile', share: 0.34 }, { name: 'Tablet', share: 0.04 }],
     browsers: [{ name: 'Chrome', share: 0.58 }, { name: 'Firefox', share: 0.18 }, { name: 'Safari', share: 0.14 }, { name: 'Edge', share: 0.1 }],
+    os: [
+      { name: 'Windows', share: 0.41 }, { name: 'macOS', share: 0.28 }, { name: 'iOS', share: 0.16 },
+      { name: 'Android', share: 0.12 }, { name: 'Linux', share: 0.03 },
+    ],
     api: [
       { service: 'payments', route: '/accounts/:account/payments/:id', status: 200, share: 0.62, p50: 50, p95: 250 },
       { service: 'payments', route: '/accounts/:account/payments/:id', status: 201, share: 0.12, p50: 100, p95: 250 },
@@ -574,9 +590,14 @@ const PROFILES = {
     countries: [
       { name: 'United States', share: 0.22 }, { name: 'Germany', share: 0.16 }, { name: 'Singapore', share: 0.12 },
       { name: 'Brazil', share: 0.11 }, { name: 'South Korea', share: 0.09 }, { name: 'Nigeria', share: 0.08 },
+      { name: 'France', share: 0.07 }, { name: 'Japan', share: 0.05 },
     ],
     devices: [{ name: 'Desktop', share: 0.71 }, { name: 'Mobile', share: 0.26 }, { name: 'Tablet', share: 0.03 }],
     browsers: [{ name: 'Chrome', share: 0.64 }, { name: 'Firefox', share: 0.16 }, { name: 'Safari', share: 0.12 }, { name: 'Edge', share: 0.08 }],
+    os: [
+      { name: 'Windows', share: 0.48 }, { name: 'macOS', share: 0.22 }, { name: 'Linux', share: 0.14 },
+      { name: 'Android', share: 0.11 }, { name: 'iOS', share: 0.05 },
+    ],
     api: [
       { service: 'quotes', route: '/markets/usdc', status: 200, share: 0.55, p50: 25, p95: 100 },
       { service: 'quotes', route: '/markets/:id', status: 200, share: 0.22, p50: 50, p95: 250 },
@@ -677,10 +698,12 @@ function stats(id) {
     p50: busiest?.p50 ?? null, p95: slowest?.p95 ?? null,
     seriesViews: wave(seedOf(id, 1), POINTS[state.range], views),
     seriesVisitors: wave(seedOf(id, 2), POINTS[state.range], visitors),
+    seriesRequests: wave(seedOf(id, 3), POINTS[state.range], requests),
     referrers: shareRows(profile.referrers, visitors),
     countries: shareRows(profile.countries, visitors),
     devices: shareRows(profile.devices, visitors),
     browsers: shareRows(profile.browsers, visitors),
+    os: shareRows(profile.os, visitors),
     delta: profile.delta,
   };
 }
@@ -732,21 +755,28 @@ const ICONS = {
   api: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12.5 6 8l2.2 2.2L14 4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
   latency: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13V7M8 13V3M13 13V9" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
 };
-function kpi(label, value, hint, icon) {
-  return '<article class="kpi"><div class="kpi-top"><p class="label">' + label + '</p>' + (icon || '') + '</div><p class="value">' + value + '</p><p class="hint">' + hint + '</p></article>';
+function priorValue(value, delta) {
+  if (!Number.isFinite(delta) || delta <= -1) return 0;
+  return value / (1 + delta);
+}
+function priorCount(value, delta) {
+  return num(Math.round(priorValue(value, delta)));
+}
+function kpi(label, value, hint, icon, more) {
+  return '<article class="kpi" tabindex="0"><div class="kpi-top"><p class="label">' + label + '</p>' + (icon || '') + '</div><p class="value">' + value + '</p><p class="hint">' + hint + '</p>' + (more ? '<p class="kpi-more">' + more + '</p>' : '') + '</article>';
 }
 function overviewKpis(data) {
   return '<section class="kpis">' +
-    kpi('Unique visitors', num(data.visitors), 'Daily distinct sessions', ICONS.visitors) +
-    kpi('Page views', num(data.views), 'Frontend activity', ICONS.views) +
-    kpi('API requests', num(data.requests), 'Across normalized routes', ICONS.api) +
-    kpi('API latency · p95', ms(data.p95), 'Merged histogram estimate', ICONS.latency) +
+    kpi('Unique visitors', num(data.visitors), 'Daily distinct sessions', ICONS.visitors, 'Prior period ' + priorCount(data.visitors, data.delta.visitors)) +
+    kpi('Page views', num(data.views), 'Frontend activity', ICONS.views, 'Prior period ' + priorCount(data.views, data.delta.pageviews)) +
+    kpi('API requests', num(data.requests), 'Across normalized routes', ICONS.api, 'Prior period ' + priorCount(data.requests, data.delta.requests)) +
+    kpi('API latency · p95', ms(data.p95), 'Merged histogram estimate', ICONS.latency, 'Slowest route in the range, bucket ceiling') +
     '</section>';
 }
 const DEMO_END = new Date(Date.UTC(2026, 10, 17));
 function windowLabel() {
   const end = new Date(DEMO_END);
-  const back = state.range === '24h' ? 0 : state.range === '7d' ? 6 : state.range === '30d' ? 30 : 89;
+  const back = state.range === '24h' ? 0 : state.range === '7d' ? 6 : state.range === '30d' ? 29 : 89;
   const start = new Date(end);
   start.setUTCDate(end.getUTCDate() - back);
   const fmt = (date) => date.toISOString().slice(0, 10);
@@ -755,7 +785,7 @@ function windowLabel() {
 function dayLabels() {
   const count = POINTS[state.range];
   if (state.range === '24h') return Array.from({ length: count }, (_, index) => (index % 6 === 0 ? String(index).padStart(2, '0') + ':00' : ''));
-  const span = state.range === '7d' ? 6 : state.range === '30d' ? 30 : 89;
+  const span = state.range === '7d' ? 6 : state.range === '30d' ? 29 : 89;
   const step = count > 14 ? 5 : 1;
   return Array.from({ length: count }, (_, index) => {
     if (index % step !== 0 && index !== count - 1) return '';
@@ -779,7 +809,7 @@ function pointWhen(index, count) {
     date.setUTCHours(index, 0, 0, 0);
     return date.toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
   }
-  const span = state.range === '7d' ? 6 : state.range === '30d' ? 30 : 89;
+  const span = state.range === '7d' ? 6 : state.range === '30d' ? 29 : 89;
   date.setUTCDate(DEMO_END.getUTCDate() - (span - Math.round((span * index) / Math.max(count - 1, 1))));
   const weekday = date.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
   const month = date.toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' });
@@ -800,30 +830,134 @@ function groupedChart(series, label) {
 function bindCharts() {
   for (const chart of stage.querySelectorAll('[data-chart]')) {
     const tip = chart.querySelector('.tip');
+    const guide = chart.querySelector('.guide');
+    const dots = [...chart.querySelectorAll('.dot-live')];
     const show = (hit) => {
-      if (!hit) { tip.hidden = true; return; }
+      if (!hit) {
+        tip.hidden = true;
+        if (guide) guide.setAttribute('hidden', '');
+        for (const dot of dots) dot.setAttribute('hidden', '');
+        return;
+      }
       tip.hidden = false;
       tip.innerHTML = '<strong>' + hit.dataset.when + '</strong>' + hit.dataset.lines;
       const box = chart.getBoundingClientRect();
       const column = hit.getBoundingClientRect();
       let left = column.left - box.left + column.width / 2;
-      left = Math.max(80, Math.min(left, box.width - 80));
+      left = Math.max(96, Math.min(left, box.width - 96));
       tip.style.left = left + 'px';
-      tip.style.top = Math.max(28, column.top - box.top) + 'px';
+      tip.style.top = Math.max(36, column.top - box.top + 28) + 'px';
+      if (guide && hit.dataset.x) {
+        guide.removeAttribute('hidden');
+        guide.setAttribute('x1', hit.dataset.x);
+        guide.setAttribute('x2', hit.dataset.x);
+        const ys = (hit.dataset.ys || '').split(',');
+        dots.forEach((dot, index) => {
+          dot.removeAttribute('hidden');
+          dot.setAttribute('cx', hit.dataset.x);
+          dot.setAttribute('cy', ys[index] || '0');
+        });
+      }
     };
     chart.addEventListener('mousemove', (event) => show(event.target.closest('.hit')));
-    chart.addEventListener('mouseleave', () => { tip.hidden = true; });
+    chart.addEventListener('mouseleave', () => show(null));
     chart.addEventListener('focusin', (event) => show(event.target.closest('.hit')));
-    chart.addEventListener('focusout', () => { tip.hidden = true; });
+    chart.addEventListener('focusout', () => show(null));
   }
+  for (const pie of stage.querySelectorAll('[data-pie]')) {
+    const tip = pie.querySelector('.tip');
+    const showSlice = (slice) => {
+      if (!slice || !slice.dataset.slice) { tip.hidden = true; return; }
+      tip.hidden = false;
+      tip.innerHTML = '<strong>' + slice.dataset.slice + '</strong><div><i class="swatch" style="background:' + (slice.getAttribute('stroke') || '#d4c4ff') + '"></i>Share<b>' + (slice.dataset.pct || '') + '</b></div><div>Count<b>' + (slice.dataset.count || '') + '</b></div>';
+    };
+    pie.addEventListener('mousemove', (event) => showSlice(event.target.closest('[data-slice]')));
+    pie.addEventListener('mouseleave', () => { tip.hidden = true; });
+  }
+}
+function formatPoint(item, value) {
+  if (item.unit === 'pct') return (value * 100).toFixed(1) + '%';
+  if (item.unit === 'sec') return duration(value);
+  return num(value);
+}
+function curveChart(series, label) {
+  const count = series[0].values.length;
+  const width = 720;
+  const height = 220;
+  const padX = 12;
+  const padY = 18;
+  const max = Math.max(...series.flatMap((item) => item.values), 1);
+  const step = (width - padX * 2) / Math.max(count - 1, 1);
+  const xAt = (index) => padX + index * step;
+  const yAt = (value) => height - padY - (value / max) * (height - padY * 2);
+  const line = (values) => values.map((value, index) => (index ? 'L' : 'M') + xAt(index).toFixed(1) + ' ' + yAt(value).toFixed(1)).join(' ');
+  const first = series[0];
+  const area = line(first.values) + ' L ' + xAt(count - 1).toFixed(1) + ' ' + (height - padY) + ' L ' + padX + ' ' + (height - padY) + ' Z';
+  const id = 'c' + (chartSeq += 1);
+  const grid = [0.25, 0.5, 0.75].map((ratio) => {
+    const y = yAt(max * ratio).toFixed(1);
+    return '<line x1="' + padX + '" x2="' + (width - padX) + '" y1="' + y + '" y2="' + y + '" stroke="rgba(243,239,230,0.08)"/>';
+  }).join('');
+  const strokes = series.map((item, index) => (index === 0 ? '<path d="' + area + '" fill="url(#' + id + ')"/>' : '') + '<path d="' + line(item.values) + '" fill="none" stroke="' + item.color + '" stroke-width="2"/>').join('');
+  const totals = series.map((item) => item.values.reduce((total, value) => total + value, 0) || 1);
+  const columns = Array.from({ length: count }, (_, index) => {
+    const lines = series.map((item, seriesIndex) => {
+      const share = item.unit ? '' : '<em>' + pct(item.values[index] / totals[seriesIndex]) + '</em>';
+      return '<div><i class="swatch" style="background:' + item.color + '"></i>' + esc(item.name) + '<b>' + formatPoint(item, item.values[index]) + '</b>' + share + '</div>';
+    }).join('');
+    const ys = series.map((item) => yAt(item.values[index]).toFixed(1)).join(',');
+    return '<div class="hit" tabindex="0" data-when="' + esc(pointWhen(index, count)) + '" data-lines="' + esc(lines) + '" data-x="' + xAt(index).toFixed(1) + '" data-ys="' + ys + '" aria-label="' + esc(pointWhen(index, count)) + '"></div>';
+  }).join('');
+  const dots = series.map((item) => '<circle class="dot-live" r="4.5" fill="' + item.color + '" stroke="#100f0d" stroke-width="1.5" hidden/>').join('');
+  const legend = series.map((item) => '<span><i style="background:' + item.color + '"></i>' + esc(item.name) + '</span>').join('');
+  return '<div class="hover-chart curve" data-chart aria-label="' + esc(label) + '"><svg viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="' + esc(label) + '"><defs><linearGradient id="' + id + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="' + first.color + '" stop-opacity="0.38"/><stop offset="1" stop-color="' + first.color + '" stop-opacity="0"/></linearGradient></defs>' + grid + strokes + '<line class="guide" y1="' + padY + '" y2="' + (height - padY) + '" stroke="rgba(243,239,230,0.4)" stroke-dasharray="3 3" hidden/>' + dots + '</svg><div class="curve-hits">' + columns + '</div><div class="axis">' + dayLabels().map((item) => '<span>' + esc(item) + '</span>').join('') + '</div><div class="legend-row" style="justify-content:center;margin-top:8px">' + legend + '</div><div class="tip" hidden></div></div>';
+}
+function band(seed, count, center, spread) {
+  return Array.from({ length: count }, (_, index) => {
+    const wobble = Math.sin((index + seed) * 0.7) * 0.62 + Math.sin((index + 2) * 0.27) * 0.38;
+    return Math.max(0, center + wobble * spread);
+  });
 }
 function activity(ids) {
   if (!ids.length) return '<section class="panel" style="margin-top:12px"><h2>No listed projects</h2><p class="quiet">List a project in SCF managing to show it here.</p></section>';
   const subtitle = ids.length > 1 ? 'Daily page views and unique visitors across all projects' : 'Daily page views and unique visitors for ' + nameOf(ids[0]);
-  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Web activity</h2><p>' + esc(subtitle) + '</p></div><span class="badge">Sample data</span></div>' + groupedChart([
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Web activity</h2><p>' + esc(subtitle) + '. Hover a day for visitors, views, and that day’s share of the range.</p></div><span class="badge">Sample data</span></div>' + curveChart([
     { name: 'Visitors', values: addSeries(ids, 'seriesVisitors'), color: '#f0a090' },
     { name: 'Views', values: addSeries(ids, 'seriesViews'), color: '#d4c4ff' },
   ], 'Visitors and page views') + '</section>';
+}
+function apiCurve(ids) {
+  if (!ids.length) return '';
+  const series = ids.length === 1
+    ? [{ name: 'API requests', values: stats(ids[0]).seriesRequests, color: '#d4c4ff' }]
+    : ids.map((id) => ({ name: nameOf(id), values: stats(id).seriesRequests, color: id === 'alpha' ? '#d4c4ff' : '#f0a090' }));
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>API volume</h2><p>Requests per ' + (state.range === '24h' ? 'hour' : 'day') + '. Hover for the count and its share of the range.</p></div><span class="badge">Sample data</span></div>' + curveChart(series, 'API requests') + '</section>';
+}
+function qualityCharts(ids) {
+  if (!ids.length) return '';
+  const parts = ids.map(stats);
+  const weight = sum(parts, (part) => part.visitors) || 1;
+  const bounce = sum(parts, (part) => part.bounce * part.visitors) / weight;
+  const visit = sum(parts, (part) => part.duration * part.visitors) / weight;
+  const count = POINTS[state.range];
+  return '<div class="layout split"><section class="panel"><div class="panel-head"><div><h2>Bounce rate</h2><p>Share of visits with a single page.</p></div></div>' + curveChart([{ name: 'Bounce', values: band(seedOf(ids[0], 8), count, bounce, bounce * 0.12), color: '#e4c48a', unit: 'pct' }], 'Bounce rate') + '</section><section class="panel"><div class="panel-head"><div><h2>Visit duration</h2><p>First event to last event, when the visit has more than one page.</p></div></div>' + curveChart([{ name: 'Duration', values: band(seedOf(ids[0], 9), count, visit, visit * 0.16), color: '#9ed9bc', unit: 'sec' }], 'Visit duration') + '</section></div>';
+}
+function latencyChart(ids) {
+  const buckets = [5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
+  const counts = buckets.map(() => 0);
+  for (const id of ids) {
+    for (const row of stats(id).api) {
+      const mid = buckets.findIndex((edge) => (row.p50 ?? row.p95) <= edge);
+      const tail = buckets.findIndex((edge) => row.p95 <= edge);
+      const start = mid < 0 ? buckets.length - 1 : mid;
+      const end = tail < 0 ? buckets.length - 1 : tail;
+      const head = Math.round(row.count * 0.7);
+      counts[start] += head;
+      counts[end] += row.count - head;
+    }
+  }
+  const rows = buckets.map((edge, index) => ({ name: '≤ ' + (edge >= 1000 ? (edge / 1000) + ' s' : edge + ' ms'), count: counts[index] }));
+  return '<section class="panel"><h2>Latency buckets</h2><p class="sub">Sample spread from p50 to p95. Production stores the same fixed buckets, and the dashboard reads the bucket ceiling.</p>' + bars(rows, false) + '</section>';
 }
 function previewPath(input) {
   const account = /^G[A-Z2-7]{55}$/;
@@ -851,18 +985,20 @@ function privacyCard() {
 function facts() {
   return '<div class="facts">' + privacyCard() + '<article class="panel"><h2>Free for every tenant</h2><p class="quiet">€0 enrollment. €0 tenant fees. Enrollment does not list a project on the dashboard.</p></article><article class="panel"><h2>Built on open source</h2><p class="quiet">Umami, MIT license. This spike adds the collector Umami does not ship.</p></article></div>';
 }
-const METRICS = { pages: 'Top pages', referrers: 'Referrers', countries: 'Countries', browsers: 'Browsers', devices: 'Devices' };
-const PIE = ['#d4c4ff', '#f0a090', '#9ed9bc', '#e4c48a', '#8f82b8', '#6d6558'];
+const METRICS = { pages: 'Top pages', referrers: 'Referrers', countries: 'Countries', browsers: 'Browsers', devices: 'Devices', os: 'Operating systems' };
+const PIE = ['#d4c4ff', '#f0a090', '#9ed9bc', '#e4c48a', '#8f82b8', '#6d6558', '#7eb6d6', '#c4b4a4'];
 function categoryRows(ids, metric) {
   if (!ids.length) return [];
   if (metric === 'pages') {
     return ids.flatMap((id) => stats(id).pages.map((page) => ({
       name: ids.length > 1 ? nameOf(id) + ' · ' + page.path : page.path,
       count: page.views,
-    }))).sort((a, b) => b.count - a.count).slice(0, 6);
+      bounce: page.bounce,
+      duration: page.duration,
+    }))).sort((a, b) => b.count - a.count).slice(0, 8);
   }
   const key = metric === 'status' ? 'countries' : metric;
-  return merged(ids, key).slice(0, 6);
+  return merged(ids, key).slice(0, 8);
 }
 function donut(rows, metric, large, interactive) {
   const drawn = rows.filter((row) => row.count > 0);
@@ -873,25 +1009,29 @@ function donut(rows, metric, large, interactive) {
   const width = large ? 18 : 10;
   const center = size / 2;
   const circ = 2 * Math.PI * radius;
+  const wrap = (svg) => '<div class="pie-wrap" data-pie>' + svg + '<div class="tip" hidden></div></div>';
+  const facts = (row) => ' data-slice="' + esc(row.name) + '" data-count="' + esc(num(row.count)) + '" data-pct="' + pct(row.count / total) + '"' + (interactive ? ' data-metric="' + metric + '"' : '');
   if (drawn.length === 1) {
-    const only = interactive ? ' data-metric="' + metric + '" data-slice="' + esc(drawn[0].name) + '"' : '';
-    return '<svg class="donut' + (large ? ' large' : '') + '" viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="' + esc(drawn[0].name) + '"><circle cx="' + center + '" cy="' + center + '" r="' + radius + '" fill="none" stroke="' + PIE[0] + '" stroke-width="' + width + '"' + only + '><title>' + esc(drawn[0].name) + ' · ' + num(drawn[0].count) + '</title></circle></svg>';
+    return wrap('<svg class="donut' + (large ? ' large' : '') + '" viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="' + esc(drawn[0].name) + '"><circle cx="' + center + '" cy="' + center + '" r="' + radius + '" fill="none" stroke="' + PIE[0] + '" stroke-width="' + width + '"' + facts(drawn[0]) + '></circle></svg>');
   }
   let offset = 0;
   const arcs = drawn.map((row, index) => {
     const len = (row.count / total) * circ;
     const gap = Math.min(2.5, len * 0.06);
     const visible = Math.max(0, len - gap);
-    const attrs = interactive ? ' data-metric="' + metric + '" data-slice="' + esc(row.name) + '"' : '';
-    const node = '<circle class="slice" cx="' + center + '" cy="' + center + '" r="' + radius + '" fill="none" stroke="' + PIE[index % PIE.length] + '" stroke-width="' + (state.slice === row.name ? width + 3 : width) + '" stroke-dasharray="' + visible.toFixed(2) + ' ' + (circ - visible).toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '" transform="rotate(-90 ' + center + ' ' + center + ')"' + attrs + '><title>' + esc(row.name) + ' · ' + num(row.count) + ' · ' + pct(row.count / total) + '</title></circle>';
+    const node = '<circle class="slice" cx="' + center + '" cy="' + center + '" r="' + radius + '" fill="none" stroke="' + PIE[index % PIE.length] + '" stroke-width="' + (state.slice === row.name ? width + 3 : width) + '" stroke-dasharray="' + visible.toFixed(2) + ' ' + (circ - visible).toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '" transform="rotate(-90 ' + center + ' ' + center + ')"' + facts(row) + '></circle>';
     offset += len;
     return node;
   }).join('');
-  return '<svg class="donut' + (large ? ' large' : '') + '" viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="' + esc(METRICS[metric] || 'Breakdown') + '">' + arcs + '</svg>';
+  return wrap('<svg class="donut' + (large ? ' large' : '') + '" viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="' + esc(METRICS[metric] || 'Breakdown') + '">' + arcs + '</svg>');
 }
 function metricCol(metric, ids) {
   const rows = categoryRows(ids, metric);
-  const lines = rows.map((row) => '<button type="button" class="pick' + (state.metric === metric && state.slice === row.name ? ' on' : '') + '" data-metric="' + metric + '" data-slice="' + esc(row.name) + '"><span>' + esc(row.name) + '</span><span class="num">' + num(row.count) + '</span></button>').join('');
+  const total = sum(rows, (row) => row.count) || 1;
+  const lines = rows.map((row) => {
+    const detail = row.bounce == null ? '' : '<span class="quiet">' + pct(row.bounce) + ' bounce · ' + duration(row.duration) + '</span>';
+    return '<button type="button" class="pick' + (state.metric === metric && state.slice === row.name ? ' on' : '') + '" data-metric="' + metric + '" data-slice="' + esc(row.name) + '"><span><span>' + esc(row.name) + '</span>' + detail + '</span><span class="num">' + num(row.count) + '<span class="quiet">' + pct(row.count / total) + '</span></span></button>';
+  }).join('');
   return '<section class="panel col metric-card' + (state.metric === metric ? ' on' : '') + '"><div class="metric-head"><button type="button" class="metric-title" data-metric="' + metric + '" aria-pressed="' + (state.metric === metric) + '">' + METRICS[metric] + '</button>' + donut(rows, metric, false, true) + '</div><div class="picks">' + lines + '</div></section>';
 }
 function metricBoard(ids) {
@@ -904,7 +1044,7 @@ function metricBoard(ids) {
   const color = PIE[Math.max(0, rows.indexOf(chosen)) % PIE.length];
   const series = wave(seedOf(ids[0], chosen.name.length + 4), POINTS[state.range], chosen.count);
   const legend = rows.map((row, index) => '<button type="button" class="pick' + (row.name === chosen.name ? ' on' : '') + '" data-metric="' + state.metric + '" data-slice="' + esc(row.name) + '"><span class="who"><i class="swatch" style="background:' + PIE[index % PIE.length] + '"></i>' + esc(row.name) + '</span><b>' + pct(row.count / total) + '</b></button>').join('');
-  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>' + esc(METRICS[state.metric]) + '</h2><p>' + esc(chosen.name) + ' · ' + num(chosen.count) + ' in this range. Pick a row to change the chart.</p></div><button class="ghost" type="button" data-metric="traffic">Visitors and views</button></div><div class="metric-split">' + donut(rows, state.metric, true, true) + '<div class="metric-legend">' + legend + '</div>' + groupedChart([{ name: chosen.name, values: series, color: color }], chosen.name) + '</div></section>';
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>' + esc(METRICS[state.metric]) + '</h2><p>' + esc(chosen.name) + ' · ' + num(chosen.count) + ' · ' + pct(chosen.count / total) + ' of this breakdown. Hover the curve for each day.</p></div><button class="ghost" type="button" data-metric="traffic">Visitors and views</button></div><div class="metric-split">' + donut(rows, state.metric, true, true) + '<div class="metric-legend">' + legend + '</div>' + curveChart([{ name: chosen.name, values: series, color: color }], chosen.name) + '</div></section>';
 }
 function statusPie(data) {
   const rows = [
@@ -976,18 +1116,18 @@ function tryPanel() {
 }
 function webKpis(data) {
   return '<section class="kpis">' +
-    kpi('Pageviews', num(data.views), change(data.delta.pageviews, true)) +
-    kpi('Visitors', num(data.visitors), change(data.delta.visitors, true)) +
-    kpi('Bounce rate', pct(data.bounce), change(data.delta.bounce, false)) +
-    kpi('Visit duration', duration(data.duration), change(data.delta.duration, true)) +
+    kpi('Pageviews', num(data.views), change(data.delta.pageviews, true), '', 'Prior period ' + priorCount(data.views, data.delta.pageviews)) +
+    kpi('Visitors', num(data.visitors), change(data.delta.visitors, true), '', 'Prior period ' + priorCount(data.visitors, data.delta.visitors)) +
+    kpi('Bounce rate', pct(data.bounce), change(data.delta.bounce, false), '', 'Prior period ' + pct(priorValue(data.bounce, data.delta.bounce))) +
+    kpi('Visit duration', duration(data.duration), change(data.delta.duration, true), '', 'Prior period ' + duration(priorValue(data.duration, data.delta.duration))) +
     '</section>';
 }
 function apiKpis(data) {
   return '<section class="kpis" style="margin-top:12px">' +
-    kpi('API requests', num(data.requests), change(data.delta.requests, true)) +
-    kpi('Error rate', pct(data.errorRate), change(data.delta.errors, false)) +
-    kpi('p50', ms(data.p50), 'Busiest route, bucket ceiling') +
-    kpi('p95', ms(data.p95), 'Slowest route, bucket ceiling') +
+    kpi('API requests', num(data.requests), change(data.delta.requests, true), '', 'Prior period ' + priorCount(data.requests, data.delta.requests)) +
+    kpi('Error rate', pct(data.errorRate), change(data.delta.errors, false), '', 'Prior period ' + pct(priorValue(data.errorRate, data.delta.errors))) +
+    kpi('p50', ms(data.p50), 'Busiest route, bucket ceiling', '', 'A 40 ms call is reported as 50 ms') +
+    kpi('p95', ms(data.p95), 'Slowest route, bucket ceiling', '', 'A 2,200 ms call is reported as 2.5 s') +
     '</section>';
 }
 function bars(rows, mono) {
@@ -997,7 +1137,7 @@ function bars(rows, mono) {
     const count = row.count ?? row.views;
     const width = Math.max(3, Math.round((count / max) * 100));
     const label = mono ? '<code>' + esc(row.path) + '</code>' : esc(row.label || row.name);
-    return '<div><div class="bar-meta"><span>' + label + '</span><span>' + num(count) + '</span></div><div class="track"><div class="fill" style="width:' + width + '%"></div></div></div>';
+    return '<div title="' + esc((row.label || row.name || row.path || '') + ' · ' + num(count)) + '"><div class="bar-meta"><span>' + label + '</span><span>' + num(count) + '</span></div><div class="track"><div class="fill" style="width:' + width + '%"></div></div></div>';
   }).join('') + '</div>';
 }
 function stack(parts) {
@@ -1166,16 +1306,16 @@ function render() {
   document.title = copy[0] + ' · Stellar ecosystem analytics';
   let html = '';
   if (state.view === 'overview') {
-    html = overviewKpis(data) + activity(ids) + projectTable(ids) + facts();
+    html = overviewKpis(data) + activity(ids) + apiCurve(ids) + projectTable(ids) + facts();
   } else if (state.view === 'web') {
     const rows = ids.flatMap((id) => stats(id).pages);
-    html = webKpis(data) + metricBoard(ids) + '<div class="cols">' +
-      metricCol('pages', ids) + metricCol('referrers', ids) + metricCol('countries', ids) + metricCol('browsers', ids) + metricCol('devices', ids) +
+    html = webKpis(data) + metricBoard(ids) + qualityCharts(ids) + '<div class="cols">' +
+      metricCol('pages', ids) + metricCol('referrers', ids) + metricCol('countries', ids) + metricCol('browsers', ids) + metricCol('devices', ids) + metricCol('os', ids) +
       '</div>' + privacyCard() + '<section class="panel" style="margin-top:12px"><h2>Paths</h2>' + webTable(rows, operator) +
       '<p class="caption">Account, contract, and muxed addresses collapse, so one key does not become its own row.</p></section>' + facts();
   } else if (state.view === 'api') {
     const ok = data.requests - data.errors - data.client;
-    html = apiKpis(data) + '<div class="layout two"><section class="panel"><h2>HTTP status distribution</h2>' + statusPie(data) + '<div class="mini"><div><span>2xx · Successful</span><span class="num">' + num(ok) + '</span></div><div><span>4xx · Client error</span><span class="num">' + num(data.client) + '</span></div><div><span>5xx · Server error</span><span class="num">' + num(data.errors) + '</span></div></div></section>' + otelPanel() + '</div><section class="panel" style="margin-top:12px"><h2>Normalized endpoints</h2>' + filters(operator) + apiTable(visibleApi(ids), operator) + '</section>' + tryPanel() + facts();
+    html = apiKpis(data) + apiCurve(ids) + '<div class="layout two"><section class="panel"><h2>HTTP status distribution</h2>' + statusPie(data) + '<div class="mini"><div><span>2xx · Successful</span><span class="num">' + num(ok) + '</span></div><div><span>4xx · Client error</span><span class="num">' + num(data.client) + '</span></div><div><span>5xx · Server error</span><span class="num">' + num(data.errors) + '</span></div></div></section>' + latencyChart(ids) + '</div><section class="panel" style="margin-top:12px"><h2>Normalized endpoints</h2>' + filters(operator) + apiTable(visibleApi(ids), operator) + '</section>' + tryPanel() + facts();
   } else if (state.view === 'manage') {
     html = manageView();
   } else if (state.view === 'compare' && ids.length > 1) {

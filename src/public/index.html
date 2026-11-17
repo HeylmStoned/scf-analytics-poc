@@ -143,6 +143,40 @@
     }
     .promo strong { display: block; margin: 8px 0 6px; font-family: var(--serif); font-weight: 520; font-size: 18px; letter-spacing: -0.03em; }
     .promo p { margin: 0; color: var(--muted); font-size: 13px; }
+    .promo-add { width: 100%; margin-top: 12px; border: 1px solid var(--line-strong); background: transparent; color: var(--text); border-radius: 10px; padding: 8px 10px; }
+    .umami { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 13px; padding: 0 8px; }
+    .umami:hover { color: var(--accent); }
+    .demo-id { display: flex; align-items: center; gap: 10px; padding: 4px 8px 0; }
+    .demo-id strong { display: block; font-size: 13px; font-weight: 600; }
+    .demo-id span { color: var(--faint); font-size: 12px; }
+    .crumb-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; color: var(--faint); font-size: 13px; }
+    .crumb span { margin: 0 6px; }
+    .demo-pill { border: 1px solid var(--line-strong); border-radius: 999px; padding: 4px 10px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .range-wrap { display: flex; align-items: center; gap: 10px; }
+    .window { color: var(--faint); font-family: var(--mono); font-size: 12px; }
+    .cols { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+    .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+    .mini { display: flex; flex-direction: column; }
+    .mini div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+    .col h2, .facts h2 { margin-bottom: 4px; }
+    .avatar.tiny { width: 28px; height: 28px; border-radius: 8px; }
+    .avatar.coral { background: #f0a090; }
+    .who { align-items: center; }
+    .who strong { display: block; font-weight: 600; }
+    .table-tools { display: flex; gap: 8px; margin-bottom: 12px; }
+    .table-tools input, .table-tools select, .try input {
+      border: 1px solid var(--line-strong);
+      background: #100f0d;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+    .table-tools input { flex: 1; }
+    .try input { width: 100%; margin-top: 8px; }
+    .try-out { margin: 10px 0 0; color: var(--accent); }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chips span { font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; color: var(--muted); }
+    .axis.dense span { flex: 1 1 0; text-align: center; min-width: 0; font-size: 10px; }
     .workspace { padding: 28px 32px 64px; }
     .workspace-inner { max-width: 1180px; }
     .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
@@ -329,13 +363,14 @@
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { flex-direction: row; overflow: auto; }
       .promo { display: none; }
-      .kpis, .two, .split { grid-template-columns: 1fr 1fr; }
+      .kpis, .two, .split, .facts { grid-template-columns: 1fr 1fr; }
+      .cols { grid-template-columns: 1fr 1fr; }
       .top, .toolbar { align-items: flex-start; flex-direction: column; }
     }
     @media (max-width: 680px) {
       .workspace { padding: 20px 16px 48px; }
       h1 { font-size: 32px; }
-      .kpis, .two, .split, .three, .receipt, .install { grid-template-columns: 1fr; }
+      .kpis, .two, .split, .three, .receipt, .install, .facts, .cols { grid-template-columns: 1fr; }
       .install pre { grid-column: auto; }
     }
   </style>
@@ -386,10 +421,20 @@
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2.2 15.5 5v4.2c0 3.4-2.6 5.6-6.5 6.6-3.9-1-6.5-3.2-6.5-6.6V5Z" fill="none" stroke="#d4c4ff" stroke-width="1.3"/></svg>
         <strong>Built for the ecosystem.</strong>
         <p>Free analytics. Free enrollment. Every Stellar project belongs.</p>
+        <button class="promo-add" type="button" id="add-side">+ Add a project</button>
+      </div>
+      <a class="umami" href="https://umami.is" target="_blank" rel="noreferrer">◕ Powered by Umami</a>
+      <div class="demo-id">
+        <span class="avatar">S</span>
+        <div><strong>SCF Demo</strong><span>Public demonstration</span></div>
       </div>
     </aside>
     <div class="workspace">
       <div class="workspace-inner">
+        <div class="crumb-row">
+          <p class="crumb">Workspace <span>›</span> Stellar Community Fund</p>
+          <span class="demo-pill">Demo · synthetic data</span>
+        </div>
         <header class="top">
           <div>
             <p class="eyebrow">Stellar Community Fund</p>
@@ -411,10 +456,13 @@
             <button type="button" data-view="web">Web</button>
             <button type="button" data-view="api">API</button>
           </div>
-          <label class="range">
-            <span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Time range</span>
-            <select id="range" aria-label="Time range"></select>
-          </label>
+          <div class="range-wrap">
+            <span id="range-window" class="window"></span>
+            <label class="range">
+              <span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Time range</span>
+              <select id="range" aria-label="Time range"></select>
+            </label>
+          </div>
         </div>
         <div id="stage"></div>
       </div>
@@ -509,7 +557,7 @@ const PROFILES = {
 
 const state = {
   token: '', role: '', tenantId: '', roster: null, view: 'overview', range: '30d',
-  status: 'all', project: 'all', sort: 'requests', receipt: null, busy: false, painted: '',
+  status: 'all', project: 'all', sort: 'requests', projectQuery: '', projectSort: 'requests', receipt: null, busy: false, painted: '',
   extra: { alpha: { views: 0, paths: {}, api: {} }, beta: { views: 0, paths: {}, api: {} } },
 };
 
@@ -650,25 +698,103 @@ function overviewKpis(data) {
     kpi('API latency · p95', ms(data.p95), 'Merged histogram estimate', ICONS.latency) +
     '</section>';
 }
-function columnChart(values, label) {
+const DEMO_END = new Date(Date.UTC(2026, 10, 17));
+function windowLabel() {
+  const end = new Date(DEMO_END);
+  const back = state.range === '24h' ? 0 : state.range === '7d' ? 6 : state.range === '30d' ? 30 : 89;
+  const start = new Date(end);
+  start.setUTCDate(end.getUTCDate() - back);
+  const fmt = (date) => date.toISOString().slice(0, 10);
+  return back === 0 ? fmt(end) : fmt(start) + ' → ' + fmt(end);
+}
+function dayLabels() {
+  const count = POINTS[state.range];
+  if (state.range === '24h') return Array.from({ length: count }, (_, index) => (index % 6 === 0 ? String(index).padStart(2, '0') + ':00' : ''));
+  const span = state.range === '7d' ? 6 : state.range === '30d' ? 30 : 89;
+  const step = count > 14 ? 5 : 1;
+  return Array.from({ length: count }, (_, index) => {
+    if (index % step !== 0 && index !== count - 1) return '';
+    const date = new Date(DEMO_END);
+    date.setUTCDate(DEMO_END.getUTCDate() - (span - Math.round((span * index) / (count - 1))));
+    return date.toLocaleDateString('en', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  });
+}
+function addSeries(ids, key) {
+  const series = ids.map((id) => stats(id)[key]);
+  return series[0].map((_, index) => series.reduce((total, values) => total + values[index], 0));
+}
+function groupedChart(series, label) {
   const width = 720;
-  const height = 220;
-  const max = Math.max(...values, 1);
-  const gap = 5;
-  const barWidth = (width - gap * (values.length + 1)) / values.length;
-  const bars = values.map((value, index) => {
-    const bar = Math.max(2, (value / max) * (height - 4));
-    const x = gap + index * (barWidth + gap);
-    return '<rect x="' + x.toFixed(1) + '" y="' + (height - bar).toFixed(1) + '" width="' + Math.max(barWidth, 1).toFixed(1) + '" height="' + bar.toFixed(1) + '" rx="2" fill="#d4c4ff"/>';
-  }).join('');
+  const height = 200;
+  const count = series[0].values.length;
+  const max = Math.max(...series.flatMap((item) => item.values), 1);
+  const gap = 4;
+  const groupWidth = (width - gap * (count + 1)) / count;
+  const barWidth = Math.max(1, (groupWidth - 2) / series.length);
+  const bars = series.map((item, seriesIndex) => item.values.map((value, index) => {
+    const bar = Math.max(1, (value / max) * (height - 4));
+    const x = gap + index * (groupWidth + gap) + seriesIndex * barWidth;
+    return '<rect x="' + x.toFixed(1) + '" y="' + (height - bar).toFixed(1) + '" width="' + barWidth.toFixed(1) + '" height="' + bar.toFixed(1) + '" rx="1.5" fill="' + item.color + '"/>';
+  }).join('')).join('');
   const ticks = [1, 0.67, 0.33, 0].map((ratio) => '<span>' + num(Math.round(max * ratio)) + '</span>').join('');
-  return '<div class="plot"><div class="yticks">' + ticks + '</div><svg class="chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="' + esc(label) + '">' + bars + '</svg></div><div class="axis" style="margin-left:52px">' + AXIS[state.range].map((item) => '<span>' + item + '</span>').join('') + '</div>';
+  const legend = series.map((item) => '<span><i style="background:' + item.color + '"></i>' + esc(item.name) + '</span>').join('');
+  return '<div class="plot"><div class="yticks">' + ticks + '</div><svg class="chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="' + esc(label) + '">' + bars + '</svg></div><div class="axis dense" style="margin-left:52px">' + dayLabels().map((item) => '<span>' + esc(item) + '</span>').join('') + '</div><div class="legend-row" style="justify-content:center;margin-top:10px">' + legend + '</div>';
 }
 function activity(ids) {
-  const values = ids.map((id) => stats(id).seriesViews);
-  const totals = values[0].map((_, index) => values.reduce((summed, series) => summed + series[index], 0));
-  const subtitle = ids.length > 1 ? 'Daily page views across all projects' : 'Daily page views for ' + nameOf(ids[0]);
-  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Web activity</h2><p>' + esc(subtitle) + '</p></div><span class="badge">Sample data</span></div>' + columnChart(totals, 'Page views') + '</section>';
+  const subtitle = ids.length > 1 ? 'Daily page views and unique visitors across all projects' : 'Daily page views and unique visitors for ' + nameOf(ids[0]);
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Web activity</h2><p>' + esc(subtitle) + '</p></div><span class="badge">Sample data</span></div>' + groupedChart([
+    { name: 'Visitors', values: addSeries(ids, 'seriesVisitors'), color: '#f0a090' },
+    { name: 'Views', values: addSeries(ids, 'seriesViews'), color: '#d4c4ff' },
+  ], 'Visitors and page views') + '</section>';
+}
+function previewPath(input) {
+  const account = /^G[A-Z2-7]{55}$/;
+  const contract = /^C[A-Z2-7]{55}$/;
+  const muxed = /^M[A-Z2-7]{68}$/;
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const numeric = /^\d+$/;
+  const hex = /^(?:0x[0-9a-f]{16,}|[0-9a-f]{32,})$/i;
+  const path = (input.split('#')[0] ?? '').split('?')[0] ?? '';
+  const segments = path.split('/').filter((part) => part.length > 0).map((part) => {
+    if (muxed.test(part)) return ':muxed';
+    if (contract.test(part)) return ':contract';
+    if (account.test(part)) return ':account';
+    if (uuid.test(part)) return ':uuid';
+    if (numeric.test(part)) return ':id';
+    if (hex.test(part)) return ':hash';
+    return part;
+  });
+  if (segments.length === 0) return '/';
+  return (path.startsWith('/') ? '/' : '') + segments.join('/');
+}
+function facts() {
+  return '<div class="facts"><article class="panel"><h2>Privacy by design</h2><p class="quiet">No cookies. Country, device, and browser figures here are sample fixtures. The live collector stores a normalized path, not a visitor profile.</p></article><article class="panel"><h2>Free for every tenant</h2><p class="quiet">€0 enrollment. €0 tenant fees.</p></article><article class="panel"><h2>Built on open source</h2><p class="quiet">Umami, MIT license. This spike adds the collector Umami does not ship.</p></article></div>';
+}
+function listCol(title, unit, rows, code) {
+  const lines = rows.slice(0, 5).map((row) => '<div><span>' + (code ? '<code>' + esc(row.path) + '</code>' : esc(row.name)) + '</span><span class="num">' + num(row.count ?? row.views) + '</span></div>').join('');
+  return '<section class="panel col"><h2>' + title + '</h2><p class="quiet">' + unit + '</p><div class="mini">' + lines + '</div></section>';
+}
+function projectTable(ids) {
+  const query = state.projectQuery.trim().toLowerCase();
+  let rows = ids.map((id) => ({ id, meta: PROFILES[id], data: stats(id) })).filter((row) => row.meta);
+  if (query) rows = rows.filter((row) => (row.meta.name + ' ' + row.meta.detail).toLowerCase().includes(query));
+  rows.sort((a, b) => {
+    if (state.projectSort === 'visitors') return b.data.visitors - a.data.visitors;
+    if (state.projectSort === 'name') return a.meta.name.localeCompare(b.meta.name);
+    return b.data.requests - a.data.requests;
+  });
+  const tools = ids.length > 1
+    ? '<div class="table-tools"><input id="project-search" type="search" placeholder="Search projects…" value="' + esc(state.projectQuery) + '" aria-label="Search projects" /><select id="project-sort" aria-label="Sort projects"><option value="requests">API requests ↓</option><option value="visitors">Visitors ↓</option><option value="name">Name A–Z</option></select></div>'
+    : '';
+  const body = rows.map((row) => '<tr><td><span class="who"><i class="avatar tiny ' + row.meta.hue + '">' + esc(row.meta.name[0]) + '</i><span><strong>' + esc(row.meta.name) + '</strong><span class="quiet">' + esc(row.meta.detail) + '</span></span></span></td><td class="num">' + num(row.data.visitors) + '</td><td class="num">' + num(row.data.views) + '</td><td class="num">' + num(row.data.requests) + '</td><td class="num">' + ms(row.data.p95) + '</td><td><span class="pill ok">Free</span></td><td><button class="ghost" type="button" data-open="' + row.id + '">View</button></td></tr>').join('');
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>' + (ids.length > 1 ? 'Ecosystem projects' : 'This project') + '</h2><p>Compare adoption with the same metrics, over the same period.</p></div><span class="count">' + rows.length + '</span></div>' + tools + '<div class="table-wrap"><table><thead><tr><th>Product</th><th>Visitors</th><th>Page views</th><th>API requests</th><th>p95 latency</th><th>Enrollment</th><th></th></tr></thead><tbody>' + (body || '<tr><td colspan="7">No project matches.</td></tr>') + '</tbody></table></div></section>';
+}
+function otelPanel() {
+  return '<section class="panel"><h2>Standard OpenTelemetry attributes</h2><p class="sub">The collector keeps these and drops span, trace, and log bodies.</p><div class="chips"><span>tenant.id</span><span>service.name</span><span>http.route</span><span>http.response.status_code</span><span>duration</span></div></section>';
+}
+function tryPanel() {
+  const sample = '/accounts/' + ACCOUNT + '/payments/42/';
+  return '<section class="panel try" style="margin-top:12px"><h2>Try path normalization</h2><p class="sub">Fixed rules for ids, UUIDs, hashes, and Stellar addresses.</p><label class="quiet">Request path<input id="try-path" value="' + esc(sample) + '" /></label><p class="try-out mono" id="try-out">' + esc(previewPath(sample)) + '</p></section>';
 }
 function webKpis(data) {
   return '<section class="kpis">' +
@@ -838,6 +964,7 @@ function render() {
   document.querySelector('#workspace-note').textContent = operator ? 'SCF operator · simulated' : (current?.detail ?? 'Project') + ' · simulated';
   document.querySelector('#project-count').textContent = String(state.roster?.tenants.length ?? 0);
   document.querySelector('#range').value = state.range;
+  document.querySelector('#range-window').textContent = windowLabel();
   for (const button of document.querySelectorAll('#nav button, #tabs button')) {
     if (button.dataset.view === state.view) button.setAttribute('aria-current', 'page');
     else button.removeAttribute('aria-current');
@@ -857,18 +984,21 @@ function render() {
   document.title = copy[0] + ' · Prism Analytics';
   let html = '';
   if (state.view === 'overview') {
-    html = overviewKpis(data) + activity(ids);
+    html = overviewKpis(data) + activity(ids) + projectTable(ids) + facts();
   } else if (state.view === 'web') {
     const rows = ids.flatMap((id) => stats(id).pages);
-    html = webKpis(data) + '<section class="panel" style="margin-top:12px"><h2>Paths</h2>' + webTable(rows, operator) +
-      '<p class="caption">Account, contract, and muxed addresses collapse, so one key does not become its own row.</p></section>' +
-      '<div class="layout two"><section class="panel"><h2>Referrers</h2>' + bars(merged(ids, 'referrers'), false) +
-      '</section><section class="panel"><h2>Countries</h2>' + bars(merged(ids, 'countries'), false) +
-      '</section></div><section class="panel" style="margin-top:12px"><h2>Devices and browsers</h2>' +
-      stack(merged(ids, 'devices').map((row, index) => ({ label: row.name, value: row.count, className: 'c' + index }))) +
-      '<div style="margin-top:16px">' + bars(merged(ids, 'browsers'), false) + '</div></section>';
+    const pages = rows.slice().sort((a, b) => b.views - a.views);
+    html = webKpis(data) + activity(ids) + '<div class="cols">' +
+      listCol('Top pages', 'views', pages, true) +
+      listCol('Referrers', 'visitors', merged(ids, 'referrers'), false) +
+      listCol('Countries', 'visitors', merged(ids, 'countries'), false) +
+      listCol('Browsers', 'visitors', merged(ids, 'browsers'), false) +
+      listCol('Devices', 'visitors', merged(ids, 'devices'), false) +
+      '</div><section class="panel" style="margin-top:12px"><h2>Paths</h2>' + webTable(rows, operator) +
+      '<p class="caption">Account, contract, and muxed addresses collapse, so one key does not become its own row.</p></section>' + facts();
   } else if (state.view === 'api') {
-    html = apiKpis(data) + '<section class="panel" style="margin-top:12px"><h2>Volume</h2>' + volumeChart(ids) + '</section><section class="panel" style="margin-top:12px"><h2>Routes</h2>' + filters(operator) + apiTable(visibleApi(ids), operator) + '</section>';
+    const ok = data.requests - data.errors - data.client;
+    html = apiKpis(data) + '<div class="layout two"><section class="panel"><h2>HTTP status distribution</h2><div class="mini"><div><span>2xx · Successful</span><span class="num">' + num(ok) + '</span></div><div><span>4xx · Client error</span><span class="num">' + num(data.client) + '</span></div><div><span>5xx · Server error</span><span class="num">' + num(data.errors) + '</span></div></div></section>' + otelPanel() + '</div><section class="panel" style="margin-top:12px"><h2>Normalized endpoints</h2>' + filters(operator) + apiTable(visibleApi(ids), operator) + '</section>' + tryPanel() + facts();
   } else if (state.view === 'compare' && ids.length > 1) {
     const [left, right] = ids.map(stats);
     const metrics = [
@@ -882,16 +1012,27 @@ function render() {
       ['Error rate', pct(left.errorRate), pct(right.errorRate)],
       ['p95', ms(left.p95), ms(right.p95)],
     ];
-    html = '<div class="layout split">' + ids.map(projectCard).join('') + '</div><section class="panel" style="margin-top:12px"><h2>Same numbers</h2><div class="table-wrap"><table><thead><tr><th>Metric</th><th>' + esc(nameOf(left.id)) + '</th><th>' + esc(nameOf(right.id)) + '</th></tr></thead><tbody>' +
+    html = projectTable(ids) + '<section class="panel" style="margin-top:12px"><h2>Same numbers</h2><div class="table-wrap"><table><thead><tr><th>Metric</th><th>' + esc(nameOf(left.id)) + '</th><th>' + esc(nameOf(right.id)) + '</th></tr></thead><tbody>' +
       metrics.map((row) => '<tr><td>' + row[0] + '</td><td class="num">' + esc(row[1]) + '</td><td class="num">' + esc(row[2]) + '</td></tr>').join('') +
       '</tbody></table></div></section><section class="panel" style="margin-top:12px"><h2>Routes</h2>' + filters(true) + apiTable(visibleApi(ids), true) + '</section>';
   } else if (state.view === 'compare') {
     html = ids.map(projectCard).join('');
   } else {
-    html = install() + '<div class="layout" style="margin-top:12px">' + actions() + '</div>';
+    html = '<section class="panel"><h2>One tenant. Web and API.</h2><p class="quiet">A project key sees only its own rows. The operator key reads every project. The buttons below hit the live collector.</p></section>' + install() + '<div class="layout" style="margin-top:12px">' + actions() + '</div>' + '<div class="layout two">' + otelPanel() + '</div>';
   }
+  const restoreSearch = document.activeElement?.id === 'project-search';
   stage.innerHTML = html;
   stage.classList.toggle('enter', animate);
+  const sort = document.querySelector('#project-sort');
+  if (sort) sort.value = state.projectSort;
+  if (restoreSearch) {
+    const search = document.querySelector('#project-search');
+    if (search) {
+      search.focus();
+      const end = search.value.length;
+      search.setSelectionRange(end, end);
+    }
+  }
 }
 function selectRole(role, token, tenantId) {
   state.role = role;
@@ -1029,10 +1170,24 @@ document.querySelector('#export').addEventListener('click', () => {
   link.click();
   URL.revokeObjectURL(link.href);
 });
-document.querySelector('#add-project').addEventListener('click', () => {
+function openEnroll() {
   document.querySelector('#enroll-result').textContent = '';
   document.querySelector('#enroll').hidden = false;
   document.querySelector('#enroll-id').focus();
+}
+document.querySelector('#add-project').addEventListener('click', openEnroll);
+document.querySelector('#add-side').addEventListener('click', openEnroll);
+stage.addEventListener('input', (event) => {
+  if (event.target.id === 'project-search') {
+    state.projectQuery = event.target.value;
+    render();
+  }
+  if (event.target.id === 'try-path') document.querySelector('#try-out').textContent = previewPath(event.target.value);
+});
+stage.addEventListener('change', (event) => {
+  if (event.target.id !== 'project-sort') return;
+  state.projectSort = event.target.value;
+  render();
 });
 document.querySelector('#enroll-cancel').addEventListener('click', () => { document.querySelector('#enroll').hidden = true; });
 document.querySelector('#enroll form').addEventListener('submit', async (event) => {
@@ -1056,6 +1211,12 @@ stage.addEventListener('click', async (event) => {
   if (sort) {
     state.sort = sort.dataset.sort;
     render();
+    return;
+  }
+  const open = event.target.closest('[data-open]');
+  if (open) {
+    const tenant = state.roster.tenants.find((item) => item.id === open.dataset.open);
+    if (tenant) selectRole(tenant.id, tenant.token, tenant.id);
     return;
   }
   if (!action || action.disabled) return;

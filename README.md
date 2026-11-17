@@ -10,6 +10,8 @@ This is not the product. The product is a fork of Umami plus this collector. The
 
 Web pageviews, bounce rate, visit duration, country, and device stay in Umami. They are not reimplemented here.
 
+Live console: https://scf-analytics-poc.alexander-wurzer.workers.dev
+
 ## Run
 
 ```bash

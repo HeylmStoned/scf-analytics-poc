@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { normalizePath } from './normalize.ts';
 import { parseOtlp } from './otlp.ts';
 import { type DemoRoster } from './seed.ts';
-import { MemoryStore, PgStore, type Principal, type Store } from './store.ts';
+import { PgStore } from './pg-store.ts';
+import { MemoryStore, type Principal, type Store } from './store.ts';
 
 const pagePath = join(dirname(fileURLToPath(import.meta.url)), 'public', 'index.html');
 

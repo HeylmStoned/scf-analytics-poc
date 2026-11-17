@@ -182,7 +182,9 @@
     .hover-chart { position: relative; }
     .bars-hit { display: flex; align-items: stretch; height: 220px; gap: 2px; }
     .hit { position: relative; flex: 1 1 0; min-width: 0; display: flex; align-items: flex-end; justify-content: center; border-radius: 4px; }
-    .hit:hover, .hit:focus-visible { background: rgba(243, 239, 230, 0.06); outline: none; }
+    .hit:hover, .hit:focus-visible, .hit.on { background: rgba(212, 196, 255, 0.14); outline: none; }
+    .day-detail { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--muted); }
+    .day-detail strong { width: 100%; color: var(--text); font-size: 13px; }
     .pair { display: flex; align-items: flex-end; justify-content: center; gap: 1px; width: 80%; height: 100%; }
     .pair i { display: block; width: 46%; border-radius: 2px 2px 0 0; min-height: 2px; }
     .tip { position: absolute; z-index: 5; pointer-events: none; transform: translate(-50%, -100%); background: #211f1b; border: 1px solid var(--line-strong); border-radius: 10px; padding: 8px 10px; min-width: 148px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
@@ -815,17 +817,26 @@ function pointWhen(index, count) {
   const month = date.toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' });
   return weekday + ', ' + month + ' ' + ordinal(date.getUTCDate()) + ', ' + date.getUTCFullYear();
 }
+function tickLabel(value, unit) {
+  if (unit === 'pct') return (value * 100).toFixed(0) + '%';
+  if (unit === 'sec') return duration(value);
+  return num(Math.round(value));
+}
 function groupedChart(series, label) {
   const count = series[0].values.length;
   const max = Math.max(...series.flatMap((item) => item.values), 1);
+  const totals = series.map((item) => item.values.reduce((total, value) => total + value, 0) || 1);
   const columns = Array.from({ length: count }, (_, index) => {
     const bars = series.map((item) => '<i style="height:' + Math.max(1, (item.values[index] / max) * 100).toFixed(2) + '%;background:' + item.color + '"></i>').join('');
-    const lines = series.map((item) => '<div><i class="swatch" style="background:' + item.color + '"></i>' + esc(item.name) + '<b>' + num(item.values[index]) + '</b></div>').join('');
+    const lines = series.map((item, seriesIndex) => {
+      const share = item.unit ? '' : '<em>' + pct(item.values[index] / totals[seriesIndex]) + '</em>';
+      return '<div><i class="swatch" style="background:' + item.color + '"></i>' + esc(item.name) + '<b>' + formatPoint(item, item.values[index]) + '</b>' + share + '</div>';
+    }).join('');
     return '<div class="hit" tabindex="0" data-when="' + esc(pointWhen(index, count)) + '" data-lines="' + esc(lines) + '" aria-label="' + esc(pointWhen(index, count)) + '"><div class="pair">' + bars + '</div></div>';
   }).join('');
-  const ticks = [1, 0.67, 0.33, 0].map((ratio) => '<span>' + num(Math.round(max * ratio)) + '</span>').join('');
+  const ticks = [1, 0.67, 0.33, 0].map((ratio) => '<span>' + tickLabel(max * ratio, series[0].unit) + '</span>').join('');
   const legend = series.map((item) => '<span><i style="background:' + item.color + '"></i>' + esc(item.name) + '</span>').join('');
-  return '<div class="hover-chart" data-chart aria-label="' + esc(label) + '"><div class="plot"><div class="yticks">' + ticks + '</div><div class="bars-hit">' + columns + '</div></div><div class="axis dense" style="margin-left:52px">' + dayLabels().map((item) => '<span>' + esc(item) + '</span>').join('') + '</div><div class="legend-row" style="justify-content:center;margin-top:10px">' + legend + '</div><div class="tip" hidden></div></div>';
+  return '<div class="hover-chart" data-chart aria-label="' + esc(label) + '"><div class="plot"><div class="yticks">' + ticks + '</div><div class="bars-hit">' + columns + '</div></div><div class="axis dense" style="margin-left:52px">' + dayLabels().map((item) => '<span>' + esc(item) + '</span>').join('') + '</div><div class="legend-row" style="justify-content:center;margin-top:10px">' + legend + '</div><div class="tip" hidden></div><div class="day-detail" hidden></div></div>';
 }
 function bindCharts() {
   for (const chart of stage.querySelectorAll('[data-chart]')) {
@@ -846,7 +857,7 @@ function bindCharts() {
       let left = column.left - box.left + column.width / 2;
       left = Math.max(96, Math.min(left, box.width - 96));
       tip.style.left = left + 'px';
-      tip.style.top = Math.max(36, column.top - box.top + 28) + 'px';
+      tip.style.top = Math.max(8, column.top - box.top) + 'px';
       if (guide && hit.dataset.x) {
         guide.removeAttribute('hidden');
         guide.setAttribute('x1', hit.dataset.x);
@@ -863,6 +874,15 @@ function bindCharts() {
     chart.addEventListener('mouseleave', () => show(null));
     chart.addEventListener('focusin', (event) => show(event.target.closest('.hit')));
     chart.addEventListener('focusout', () => show(null));
+    chart.addEventListener('click', (event) => {
+      const hit = event.target.closest('.hit');
+      const detail = chart.querySelector('.day-detail');
+      if (!hit || !detail) return;
+      chart.querySelectorAll('.hit.on').forEach((item) => item.classList.remove('on'));
+      hit.classList.add('on');
+      detail.hidden = false;
+      detail.innerHTML = '<strong>' + hit.dataset.when + '</strong>' + hit.dataset.lines;
+    });
   }
   for (const pie of stage.querySelectorAll('[data-pie]')) {
     const tip = pie.querySelector('.tip');
@@ -880,38 +900,6 @@ function formatPoint(item, value) {
   if (item.unit === 'sec') return duration(value);
   return num(value);
 }
-function curveChart(series, label) {
-  const count = series[0].values.length;
-  const width = 720;
-  const height = 220;
-  const padX = 12;
-  const padY = 18;
-  const max = Math.max(...series.flatMap((item) => item.values), 1);
-  const step = (width - padX * 2) / Math.max(count - 1, 1);
-  const xAt = (index) => padX + index * step;
-  const yAt = (value) => height - padY - (value / max) * (height - padY * 2);
-  const line = (values) => values.map((value, index) => (index ? 'L' : 'M') + xAt(index).toFixed(1) + ' ' + yAt(value).toFixed(1)).join(' ');
-  const first = series[0];
-  const area = line(first.values) + ' L ' + xAt(count - 1).toFixed(1) + ' ' + (height - padY) + ' L ' + padX + ' ' + (height - padY) + ' Z';
-  const id = 'c' + (chartSeq += 1);
-  const grid = [0.25, 0.5, 0.75].map((ratio) => {
-    const y = yAt(max * ratio).toFixed(1);
-    return '<line x1="' + padX + '" x2="' + (width - padX) + '" y1="' + y + '" y2="' + y + '" stroke="rgba(243,239,230,0.08)"/>';
-  }).join('');
-  const strokes = series.map((item, index) => (index === 0 ? '<path d="' + area + '" fill="url(#' + id + ')"/>' : '') + '<path d="' + line(item.values) + '" fill="none" stroke="' + item.color + '" stroke-width="2"/>').join('');
-  const totals = series.map((item) => item.values.reduce((total, value) => total + value, 0) || 1);
-  const columns = Array.from({ length: count }, (_, index) => {
-    const lines = series.map((item, seriesIndex) => {
-      const share = item.unit ? '' : '<em>' + pct(item.values[index] / totals[seriesIndex]) + '</em>';
-      return '<div><i class="swatch" style="background:' + item.color + '"></i>' + esc(item.name) + '<b>' + formatPoint(item, item.values[index]) + '</b>' + share + '</div>';
-    }).join('');
-    const ys = series.map((item) => yAt(item.values[index]).toFixed(1)).join(',');
-    return '<div class="hit" tabindex="0" data-when="' + esc(pointWhen(index, count)) + '" data-lines="' + esc(lines) + '" data-x="' + xAt(index).toFixed(1) + '" data-ys="' + ys + '" aria-label="' + esc(pointWhen(index, count)) + '"></div>';
-  }).join('');
-  const dots = series.map((item) => '<circle class="dot-live" r="4.5" fill="' + item.color + '" stroke="#100f0d" stroke-width="1.5" hidden/>').join('');
-  const legend = series.map((item) => '<span><i style="background:' + item.color + '"></i>' + esc(item.name) + '</span>').join('');
-  return '<div class="hover-chart curve" data-chart aria-label="' + esc(label) + '"><svg viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="' + esc(label) + '"><defs><linearGradient id="' + id + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="' + first.color + '" stop-opacity="0.38"/><stop offset="1" stop-color="' + first.color + '" stop-opacity="0"/></linearGradient></defs>' + grid + strokes + '<line class="guide" y1="' + padY + '" y2="' + (height - padY) + '" stroke="rgba(243,239,230,0.4)" stroke-dasharray="3 3" hidden/>' + dots + '</svg><div class="curve-hits">' + columns + '</div><div class="axis">' + dayLabels().map((item) => '<span>' + esc(item) + '</span>').join('') + '</div><div class="legend-row" style="justify-content:center;margin-top:8px">' + legend + '</div><div class="tip" hidden></div></div>';
-}
 function band(seed, count, center, spread) {
   return Array.from({ length: count }, (_, index) => {
     const wobble = Math.sin((index + seed) * 0.7) * 0.62 + Math.sin((index + 2) * 0.27) * 0.38;
@@ -921,7 +909,7 @@ function band(seed, count, center, spread) {
 function activity(ids) {
   if (!ids.length) return '<section class="panel" style="margin-top:12px"><h2>No listed projects</h2><p class="quiet">List a project in SCF managing to show it here.</p></section>';
   const subtitle = ids.length > 1 ? 'Daily page views and unique visitors across all projects' : 'Daily page views and unique visitors for ' + nameOf(ids[0]);
-  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Web activity</h2><p>' + esc(subtitle) + '. Hover a day for visitors, views, and that day’s share of the range.</p></div><span class="badge">Sample data</span></div>' + curveChart([
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Web activity</h2><p>' + esc(subtitle) + '. Hover a bar for the day, or click it to keep the numbers open.</p></div><span class="badge">Sample data</span></div>' + groupedChart([
     { name: 'Visitors', values: addSeries(ids, 'seriesVisitors'), color: '#f0a090' },
     { name: 'Views', values: addSeries(ids, 'seriesViews'), color: '#d4c4ff' },
   ], 'Visitors and page views') + '</section>';
@@ -931,7 +919,7 @@ function apiCurve(ids) {
   const series = ids.length === 1
     ? [{ name: 'API requests', values: stats(ids[0]).seriesRequests, color: '#d4c4ff' }]
     : ids.map((id) => ({ name: nameOf(id), values: stats(id).seriesRequests, color: id === 'alpha' ? '#d4c4ff' : '#f0a090' }));
-  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>API volume</h2><p>Requests per ' + (state.range === '24h' ? 'hour' : 'day') + '. Hover for the count and its share of the range.</p></div><span class="badge">Sample data</span></div>' + curveChart(series, 'API requests') + '</section>';
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>API volume</h2><p>Requests per ' + (state.range === '24h' ? 'hour' : 'day') + '. Click a bar to keep that point open.</p></div><span class="badge">Sample data</span></div>' + groupedChart(series, 'API requests') + '</section>';
 }
 function qualityCharts(ids) {
   if (!ids.length) return '';
@@ -940,7 +928,7 @@ function qualityCharts(ids) {
   const bounce = sum(parts, (part) => part.bounce * part.visitors) / weight;
   const visit = sum(parts, (part) => part.duration * part.visitors) / weight;
   const count = POINTS[state.range];
-  return '<div class="layout split"><section class="panel"><div class="panel-head"><div><h2>Bounce rate</h2><p>Share of visits with a single page.</p></div></div>' + curveChart([{ name: 'Bounce', values: band(seedOf(ids[0], 8), count, bounce, bounce * 0.12), color: '#e4c48a', unit: 'pct' }], 'Bounce rate') + '</section><section class="panel"><div class="panel-head"><div><h2>Visit duration</h2><p>First event to last event, when the visit has more than one page.</p></div></div>' + curveChart([{ name: 'Duration', values: band(seedOf(ids[0], 9), count, visit, visit * 0.16), color: '#9ed9bc', unit: 'sec' }], 'Visit duration') + '</section></div>';
+  return '<div class="layout split"><section class="panel"><div class="panel-head"><div><h2>Bounce rate</h2><p>Share of visits with a single page. Click a bar to keep that day open.</p></div></div>' + groupedChart([{ name: 'Bounce', values: band(seedOf(ids[0], 8), count, bounce, bounce * 0.12), color: '#e4c48a', unit: 'pct' }], 'Bounce rate') + '</section><section class="panel"><div class="panel-head"><div><h2>Visit duration</h2><p>First event to last event, when the visit has more than one page.</p></div></div>' + groupedChart([{ name: 'Duration', values: band(seedOf(ids[0], 9), count, visit, visit * 0.16), color: '#9ed9bc', unit: 'sec' }], 'Visit duration') + '</section></div>';
 }
 function latencyChart(ids) {
   const buckets = [5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
@@ -1044,7 +1032,7 @@ function metricBoard(ids) {
   const color = PIE[Math.max(0, rows.indexOf(chosen)) % PIE.length];
   const series = wave(seedOf(ids[0], chosen.name.length + 4), POINTS[state.range], chosen.count);
   const legend = rows.map((row, index) => '<button type="button" class="pick' + (row.name === chosen.name ? ' on' : '') + '" data-metric="' + state.metric + '" data-slice="' + esc(row.name) + '"><span class="who"><i class="swatch" style="background:' + PIE[index % PIE.length] + '"></i>' + esc(row.name) + '</span><b>' + pct(row.count / total) + '</b></button>').join('');
-  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>' + esc(METRICS[state.metric]) + '</h2><p>' + esc(chosen.name) + ' · ' + num(chosen.count) + ' · ' + pct(chosen.count / total) + ' of this breakdown. Hover the curve for each day.</p></div><button class="ghost" type="button" data-metric="traffic">Visitors and views</button></div><div class="metric-split">' + donut(rows, state.metric, true, true) + '<div class="metric-legend">' + legend + '</div>' + curveChart([{ name: chosen.name, values: series, color: color }], chosen.name) + '</div></section>';
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>' + esc(METRICS[state.metric]) + '</h2><p>' + esc(chosen.name) + ' · ' + num(chosen.count) + ' · ' + pct(chosen.count / total) + ' of this breakdown. Click a bar to keep that day open.</p></div><button class="ghost" type="button" data-metric="traffic">Visitors and views</button></div><div class="metric-split">' + donut(rows, state.metric, true, true) + '<div class="metric-legend">' + legend + '</div>' + groupedChart([{ name: chosen.name, values: series, color: color }], chosen.name) + '</div></section>';
 }
 function statusPie(data) {
   const rows = [

@@ -59,7 +59,9 @@
       background: var(--rail);
       border-right: 1px solid var(--line);
     }
-    .brand { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 0 8px; }
+    .brand { display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 0 8px; color: var(--text); text-decoration: none; }
+    .brand strong { display: block; font-weight: 600; font-size: 18px; letter-spacing: -0.03em; line-height: 1; text-transform: lowercase; }
+    .brand span { display: block; color: var(--muted); font-size: 12px; }
     .brand strong { display: block; font-family: var(--serif); font-weight: 520; font-size: 22px; letter-spacing: -0.03em; line-height: 1; }
     .brand span { color: var(--muted); font-size: 12.5px; }
     .kicker { margin: 8px 8px 0; color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
@@ -177,6 +179,18 @@
     .chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .chips span { font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; color: var(--muted); }
     .axis.dense span { flex: 1 1 0; text-align: center; min-width: 0; font-size: 10px; }
+    .hover-chart { position: relative; }
+    .bars-hit { display: flex; align-items: stretch; height: 220px; gap: 2px; }
+    .hit { position: relative; flex: 1 1 0; min-width: 0; display: flex; align-items: flex-end; justify-content: center; border-radius: 4px; }
+    .hit:hover, .hit:focus-visible { background: rgba(243, 239, 230, 0.06); outline: none; }
+    .pair { display: flex; align-items: flex-end; justify-content: center; gap: 1px; width: 80%; height: 100%; }
+    .pair i { display: block; width: 46%; border-radius: 2px 2px 0 0; min-height: 2px; }
+    .tip { position: absolute; z-index: 5; pointer-events: none; transform: translate(-50%, -100%); background: #211f1b; border: 1px solid var(--line-strong); border-radius: 10px; padding: 8px 10px; min-width: 148px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
+    .tip strong { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+    .tip div { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; }
+    .tip b { margin-left: auto; color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .privacy-card { margin-top: 12px; }
+    .privacy-card h2 { color: var(--text); font-size: 16px; margin: 8px 0; }
     .workspace { padding: 28px 32px 64px; }
     .workspace-inner { width: 100%; }
     .brand { color: var(--text); }
@@ -390,22 +404,12 @@
   </div>
   <div id="app" class="app" hidden>
     <aside>
-      <div class="brand">
-        <svg width="113" height="28" viewBox="0 0 113 28" fill="none" aria-label="Prism">
-          <path d="M53.492 4.72C56.516 4.72 58.928 6.496 58.928 9.676C58.928 12.856 56.516 14.656 53.492 14.656H48.14V22H45.956V4.72H53.492ZM48.14 12.796H53.156C55.316 12.796 56.756 11.668 56.756 9.688C56.756 7.696 55.316 6.58 53.156 6.58H48.14V12.796Z" fill="currentColor"/>
-          <path d="M60.8459 9.772H62.8859V11.236H63.0779C63.4979 10.372 64.2659 9.724 66.1019 9.724H67.8059V11.548H66.1499C63.8579 11.548 62.9579 12.808 62.9579 15.292V22H60.8459V9.772Z" fill="currentColor"/>
-          <path d="M69.6706 9.772H71.7826V22H69.6706V9.772ZM69.5146 7.684V5.368H71.9626V7.684H69.5146Z" fill="currentColor"/>
-          <path d="M74.1922 13.012C74.1922 10.828 76.0642 9.496 79.1962 9.496C82.3402 9.496 84.2842 10.828 84.4762 13.132V13.492H82.5322C82.4482 11.812 81.1162 11.164 79.2082 11.164C77.3002 11.164 76.2202 11.812 76.2202 12.964C76.2202 14.128 77.1442 14.536 78.4282 14.728L80.5642 15.052C82.9762 15.412 84.6442 16.36 84.6442 18.556C84.6442 20.752 82.8922 22.276 79.5442 22.276C76.2082 22.276 74.1202 20.752 73.9402 18.556V18.196H75.8962C76.0402 19.84 77.5162 20.608 79.5442 20.608C81.5842 20.608 82.6042 19.828 82.6042 18.664C82.6042 17.5 81.6562 17.032 80.0962 16.804L77.9602 16.48C75.7162 16.144 74.1922 15.172 74.1922 13.012Z" fill="currentColor"/>
-          <path d="M86.7341 9.772H88.7501V11.116H88.9421C89.4581 10.384 90.4181 9.496 92.6501 9.496C94.7741 9.496 95.7821 10.408 96.2141 11.476H96.4061C96.9941 10.444 98.1101 9.496 100.474 9.496C102.97 9.496 104.602 10.852 104.602 13.504V22H102.514V13.696C102.514 12.076 101.65 11.26 99.9581 11.26C98.0621 11.26 96.7181 12.34 96.7181 14.728V22H94.6301V13.696C94.6301 12.076 93.7901 11.26 92.0741 11.26C90.1781 11.26 88.8221 12.34 88.8221 14.728V22H86.7341V9.772Z" fill="currentColor"/>
-          <path d="M107 5H109.484V5.43958H108.486V8H107.996V5.43958H107V5Z" fill="currentColor"/>
-          <path d="M109.796 5H110.383L111.387 7.45625H111.419L112.423 5H113V8H112.552V5.83333H112.52L111.635 8H111.159L110.274 5.83333H110.243V8H109.796V5Z" fill="currentColor"/>
-          <path d="M31 27.8371V0L20.8352 16.6686L31 27.8371Z" fill="currentColor"/>
-          <path d="M28.8506 28L14.6826 26.6353L19.868 18.1321L28.8506 28Z" fill="currentColor"/>
-          <path d="M13.0597 25.9081L18.6311 16.7717L15.2211 13.0258L0 11.5596L13.0597 25.9081Z" fill="currentColor"/>
-          <path d="M15.3432 11.2788L1.75586 9.9707L26.9044 0.828973L15.3432 11.2788Z" fill="currentColor"/>
+      <a class="brand" href="https://stellar.org" target="_blank" rel="noreferrer">
+        <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M12.003 1.716c-1.37 0-2.7.27-3.948.78A10.18 10.18 0 0 0 2.66 7.901a10.136 10.136 0 0 0-.797 3.954c0 .258.01.516.027.775a1.942 1.942 0 0 1-1.055 1.88L0 14.934v1.902l2.463-1.26.072-.032v.005l.77-.39.758-.385.066-.039 14.807-7.56 1.666-.847 3.392-1.732V2.694L17.792 5.86 3.744 13.025l-.104.055-.017-.115a8.286 8.286 0 0 1-.071-1.105c0-2.255.88-4.377 2.474-5.977a8.462 8.462 0 0 1 2.71-1.82 8.513 8.513 0 0 1 3.2-.654h.067a8.41 8.41 0 0 1 4.09 1.055l1.628-.83.126-.066a10.11 10.11 0 0 0-5.845-1.853zM24 7.143 5.047 16.808l-1.666.847L0 19.382v1.902l3.282-1.671 2.91-1.485 14.058-7.153.105-.055.016.115c.05.369.072.743.072 1.11 0 2.255-.88 4.383-2.475 5.978a8.461 8.461 0 0 1-2.71 1.82 8.305 8.305 0 0 1-3.2.654h-.06c-1.441 0-2.86-.369-4.102-1.061l-.066.033-1.683.857c.594.418 1.232.776 1.903 1.062a10.11 10.11 0 0 0 3.947.797 10.09 10.09 0 0 0 7.17-2.975 10.136 10.136 0 0 0 2.969-7.18c0-.259-.005-.523-.027-.781a1.942 1.942 0 0 1 1.055-1.88L24 9.044z"/>
         </svg>
-        <span>ecosystem analytics</span>
-      </div>
+        <span><strong>stellar</strong><span>ecosystem analytics</span></span>
+      </a>
       <div>
         <p class="kicker">Workspace</p>
         <div class="workspace-menu">
@@ -428,7 +432,7 @@
       <div class="promo">
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2.2 15.5 5v4.2c0 3.4-2.6 5.6-6.5 6.6-3.9-1-6.5-3.2-6.5-6.6V5Z" fill="none" stroke="#d4c4ff" stroke-width="1.3"/></svg>
         <strong>Built for the ecosystem.</strong>
-        <p>Free analytics. Free enrollment. Every Stellar project belongs.</p>
+        <p>Free analytics. Free enrollment. Enrollment does not list a project on the dashboard.</p>
         <button class="promo-add" type="button" id="add-side">+ Add a project</button>
       </div>
       <a class="umami" href="https://umami.is" target="_blank" rel="noreferrer">◕ Powered by Umami</a>
@@ -479,7 +483,7 @@
   <div id="enroll" class="modal" hidden>
     <form class="panel">
       <h2>Add a project</h2>
-      <p class="lede">Free enrollment. An operator key mints a project token.</p>
+      <p class="lede">Free enrollment mints a project token. It does not guarantee a listing on the dashboard. SCF decides what is shown.</p>
       <input id="enroll-id" name="id" autocomplete="off" placeholder="Project id" />
       <div class="modal-actions">
         <button class="ghost" type="button" id="enroll-cancel">Cancel</button>
@@ -731,22 +735,54 @@ function addSeries(ids, key) {
   const series = ids.map((id) => stats(id)[key]);
   return series[0].map((_, index) => series.reduce((total, values) => total + values[index], 0));
 }
+function ordinal(day) {
+  const teen = day % 100;
+  const suffix = teen >= 11 && teen <= 13 ? 'th' : { 1: 'st', 2: 'nd', 3: 'rd' }[day % 10] || 'th';
+  return day + suffix;
+}
+function pointWhen(index, count) {
+  const date = new Date(DEMO_END);
+  if (state.range === '24h') {
+    date.setUTCHours(index, 0, 0, 0);
+    return date.toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
+  }
+  const span = state.range === '7d' ? 6 : state.range === '30d' ? 30 : 89;
+  date.setUTCDate(DEMO_END.getUTCDate() - (span - Math.round((span * index) / Math.max(count - 1, 1))));
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
+  const month = date.toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' });
+  return weekday + ', ' + month + ' ' + ordinal(date.getUTCDate()) + ', ' + date.getUTCFullYear();
+}
 function groupedChart(series, label) {
-  const width = 720;
-  const height = 200;
   const count = series[0].values.length;
   const max = Math.max(...series.flatMap((item) => item.values), 1);
-  const gap = 4;
-  const groupWidth = (width - gap * (count + 1)) / count;
-  const barWidth = Math.max(1, (groupWidth - 2) / series.length);
-  const bars = series.map((item, seriesIndex) => item.values.map((value, index) => {
-    const bar = Math.max(1, (value / max) * (height - 4));
-    const x = gap + index * (groupWidth + gap) + seriesIndex * barWidth;
-    return '<rect x="' + x.toFixed(1) + '" y="' + (height - bar).toFixed(1) + '" width="' + barWidth.toFixed(1) + '" height="' + bar.toFixed(1) + '" rx="1.5" fill="' + item.color + '"/>';
-  }).join('')).join('');
+  const columns = Array.from({ length: count }, (_, index) => {
+    const bars = series.map((item) => '<i style="height:' + Math.max(1, (item.values[index] / max) * 100).toFixed(2) + '%;background:' + item.color + '"></i>').join('');
+    const lines = series.map((item) => '<div><i class="swatch" style="background:' + item.color + '"></i>' + esc(item.name) + '<b>' + num(item.values[index]) + '</b></div>').join('');
+    return '<div class="hit" tabindex="0" data-when="' + esc(pointWhen(index, count)) + '" data-lines="' + esc(lines) + '" aria-label="' + esc(pointWhen(index, count)) + '"><div class="pair">' + bars + '</div></div>';
+  }).join('');
   const ticks = [1, 0.67, 0.33, 0].map((ratio) => '<span>' + num(Math.round(max * ratio)) + '</span>').join('');
   const legend = series.map((item) => '<span><i style="background:' + item.color + '"></i>' + esc(item.name) + '</span>').join('');
-  return '<div class="plot"><div class="yticks">' + ticks + '</div><svg class="chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="' + esc(label) + '">' + bars + '</svg></div><div class="axis dense" style="margin-left:52px">' + dayLabels().map((item) => '<span>' + esc(item) + '</span>').join('') + '</div><div class="legend-row" style="justify-content:center;margin-top:10px">' + legend + '</div>';
+  return '<div class="hover-chart" data-chart aria-label="' + esc(label) + '"><div class="plot"><div class="yticks">' + ticks + '</div><div class="bars-hit">' + columns + '</div></div><div class="axis dense" style="margin-left:52px">' + dayLabels().map((item) => '<span>' + esc(item) + '</span>').join('') + '</div><div class="legend-row" style="justify-content:center;margin-top:10px">' + legend + '</div><div class="tip" hidden></div></div>';
+}
+function bindCharts() {
+  for (const chart of stage.querySelectorAll('[data-chart]')) {
+    const tip = chart.querySelector('.tip');
+    const show = (hit) => {
+      if (!hit) { tip.hidden = true; return; }
+      tip.hidden = false;
+      tip.innerHTML = '<strong>' + hit.dataset.when + '</strong>' + hit.dataset.lines;
+      const box = chart.getBoundingClientRect();
+      const column = hit.getBoundingClientRect();
+      let left = column.left - box.left + column.width / 2;
+      left = Math.max(80, Math.min(left, box.width - 80));
+      tip.style.left = left + 'px';
+      tip.style.top = Math.max(28, column.top - box.top) + 'px';
+    };
+    chart.addEventListener('mousemove', (event) => show(event.target.closest('.hit')));
+    chart.addEventListener('mouseleave', () => { tip.hidden = true; });
+    chart.addEventListener('focusin', (event) => show(event.target.closest('.hit')));
+    chart.addEventListener('focusout', () => { tip.hidden = true; });
+  }
 }
 function activity(ids) {
   const subtitle = ids.length > 1 ? 'Daily page views and unique visitors across all projects' : 'Daily page views and unique visitors for ' + nameOf(ids[0]);
@@ -775,8 +811,11 @@ function previewPath(input) {
   if (segments.length === 0) return '/';
   return (path.startsWith('/') ? '/' : '') + segments.join('/');
 }
+function privacyCard() {
+  return '<section class="panel privacy-card"><svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2.2 15.5 5v4.2c0 3.4-2.6 5.6-6.5 6.6-3.9-1-6.5-3.2-6.5-6.6V5Z" fill="none" stroke="#d4c4ff" stroke-width="1.3"/></svg><h2>Privacy by design</h2><p class="quiet">This demo collects no visitor telemetry. Country, device and browser breakdowns are generated fixtures. Production privacy controls remain to be implemented.</p></section>';
+}
 function facts() {
-  return '<div class="facts"><article class="panel"><h2>Privacy by design</h2><p class="quiet">No cookies. Country, device, and browser figures here are sample fixtures. The live collector stores a normalized path, not a visitor profile.</p></article><article class="panel"><h2>Free for every tenant</h2><p class="quiet">€0 enrollment. €0 tenant fees.</p></article><article class="panel"><h2>Built on open source</h2><p class="quiet">Umami, MIT license. This spike adds the collector Umami does not ship.</p></article></div>';
+  return '<div class="facts">' + privacyCard() + '<article class="panel"><h2>Free for every tenant</h2><p class="quiet">€0 enrollment. €0 tenant fees. Enrollment does not list a project on the dashboard.</p></article><article class="panel"><h2>Built on open source</h2><p class="quiet">Umami, MIT license. This spike adds the collector Umami does not ship.</p></article></div>';
 }
 function listCol(title, unit, rows, code) {
   const lines = rows.slice(0, 5).map((row) => '<div><span>' + (code ? '<code>' + esc(row.path) + '</code>' : esc(row.name)) + '</span><span class="num">' + num(row.count ?? row.views) + '</span></div>').join('');
@@ -989,7 +1028,7 @@ function render() {
   }[state.view];
   title.textContent = copy[0];
   lede.textContent = copy[1];
-  document.title = copy[0] + ' · Prism Analytics';
+  document.title = copy[0] + ' · Stellar ecosystem analytics';
   let html = '';
   if (state.view === 'overview') {
     html = overviewKpis(data) + activity(ids) + projectTable(ids) + facts();
@@ -1002,7 +1041,7 @@ function render() {
       listCol('Countries', 'visitors', merged(ids, 'countries'), false) +
       listCol('Browsers', 'visitors', merged(ids, 'browsers'), false) +
       listCol('Devices', 'visitors', merged(ids, 'devices'), false) +
-      '</div><section class="panel" style="margin-top:12px"><h2>Paths</h2>' + webTable(rows, operator) +
+      '</div>' + privacyCard() + '<section class="panel" style="margin-top:12px"><h2>Paths</h2>' + webTable(rows, operator) +
       '<p class="caption">Account, contract, and muxed addresses collapse, so one key does not become its own row.</p></section>' + facts();
   } else if (state.view === 'api') {
     const ok = data.requests - data.errors - data.client;
@@ -1041,6 +1080,7 @@ function render() {
       search.setSelectionRange(end, end);
     }
   }
+  bindCharts();
 }
 function selectRole(role, token, tenantId) {
   state.role = role;

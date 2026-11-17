@@ -191,6 +191,23 @@
     .tip b { margin-left: auto; color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
     .privacy-card { margin-top: 12px; }
     .privacy-card h2 { color: var(--text); font-size: 16px; margin: 8px 0; }
+    .metric-card.on { border-color: rgba(212, 196, 255, 0.55); }
+    .metric-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+    .metric-title { border: 0; background: transparent; color: var(--text); font-weight: 600; font-size: 16px; padding: 0; text-align: left; }
+    .donut { width: 54px; height: 54px; flex: none; }
+    .donut.large { width: 168px; height: 168px; }
+    .donut .slice { cursor: pointer; }
+    .picks { display: flex; flex-direction: column; }
+    .pick { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--text); padding: 8px 0; text-align: left; }
+    .pick.on { color: var(--accent); }
+    .metric-split { display: grid; grid-template-columns: 180px minmax(150px, 220px) minmax(0, 1fr); gap: 18px; align-items: center; }
+    .metric-legend { display: flex; flex-direction: column; }
+    .status-pie { display: flex; justify-content: center; margin: 4px 0 12px; }
+    .switch { display: inline-flex; gap: 4px; padding: 3px; background: var(--surface-2); border-radius: 12px; }
+    .switch button { border: 0; background: transparent; color: var(--muted); border-radius: 9px; padding: 7px 12px; }
+    .switch button[aria-pressed="true"] { background: var(--text); color: #16140f; }
+    .key-line { margin-top: 10px; color: var(--accent); word-break: break-all; }
+    .manage-actions { display: flex; flex-wrap: wrap; gap: 6px; }
     .workspace { padding: 28px 32px 64px; }
     .workspace-inner { width: 100%; }
     .brand { color: var(--text); }
@@ -381,6 +398,7 @@
       .promo { display: none; }
       .kpis, .two, .split, .facts { grid-template-columns: 1fr 1fr; }
       .cols { grid-template-columns: 1fr 1fr; }
+      .metric-split { grid-template-columns: 1fr; }
       .top, .toolbar { align-items: flex-start; flex-direction: column; }
     }
     @media (max-width: 680px) {
@@ -427,6 +445,7 @@
         <button type="button" data-view="web"><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.2" fill="none" stroke="currentColor"/><path d="M3 8h10M8 2.8c1.6 1.6 1.6 8.8 0 10.4M8 2.8c-1.6 1.6-1.6 8.8 0 10.4" fill="none" stroke="currentColor"/></svg>Web analytics</span></button>
         <button type="button" data-view="api"><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12.5 6 8l2.2 2.2L14 4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>API analytics</span></button>
         <button type="button" data-view="compare"><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="3" rx="1" fill="none" stroke="currentColor"/><rect x="2" y="8" width="12" height="5" rx="1" fill="none" stroke="currentColor"/></svg>Projects</span><span id="project-count" class="count">2</span></button>
+        <button type="button" data-view="manage" id="nav-manage" hidden><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" fill="none" stroke="currentColor"/><circle cx="5.5" cy="4.5" r="1.3" fill="currentColor"/><circle cx="10.5" cy="8" r="1.3" fill="currentColor"/><circle cx="6.5" cy="11.5" r="1.3" fill="currentColor"/></svg>SCF managing</span></button>
         <button type="button" data-view="integration"><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4.5 2.5 8 6 11.5M10 4.5 13.5 8 10 11.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>Integration</span></button>
       </nav>
       <div class="promo">
@@ -570,6 +589,10 @@ const PROFILES = {
 const state = {
   token: '', role: '', tenantId: '', roster: null, view: 'overview', range: '30d',
   status: 'all', project: 'all', sort: 'requests', projectQuery: '', projectSort: 'requests', receipt: null, busy: false, painted: '',
+  metric: '', slice: '', approval: false, listing: {}, removed: {},
+  waiting: [{ id: 'quill', name: 'Quill', detail: 'Sample application', proof: 'SCF project link', status: 'pending' }],
+  keys: [{ id: 'live', name: 'Ecosystem reader', hint: 'scf_mtr_9f3a2c1e', revoked: false }],
+  freshKey: '',
   extra: { alpha: { views: 0, paths: {}, api: {} }, beta: { views: 0, paths: {}, api: {} } },
 };
 
@@ -661,8 +684,15 @@ function stats(id) {
     delta: profile.delta,
   };
 }
+function listingOf(id) {
+  if (state.removed[id]) return 'removed';
+  const waiting = state.waiting.find((item) => item.id === id);
+  if (waiting) return waiting.status;
+  return state.listing[id] || 'listed';
+}
 function scopeIds() {
-  return state.role === 'operator' ? state.roster.tenants.map((tenant) => tenant.id) : [state.tenantId];
+  if (state.role !== 'operator') return [state.tenantId];
+  return state.roster.tenants.map((tenant) => tenant.id).filter((id) => PROFILES[id] && listingOf(id) === 'listed');
 }
 function merged(ids, key) {
   const map = new Map();
@@ -673,6 +703,9 @@ function merged(ids, key) {
 }
 function headline(ids) {
   const parts = ids.map(stats);
+  if (!parts.length) {
+    return { views: 0, visitors: 0, requests: 0, errors: 0, client: 0, bounce: 0, duration: 0, p50: null, p95: null, errorRate: 0, delta: { pageviews: 0, visitors: 0, bounce: 0, duration: 0, requests: 0, errors: 0 } };
+  }
   const views = sum(parts, (part) => part.views);
   const visitors = sum(parts, (part) => part.visitors);
   const requests = sum(parts, (part) => part.requests);
@@ -785,6 +818,7 @@ function bindCharts() {
   }
 }
 function activity(ids) {
+  if (!ids.length) return '<section class="panel" style="margin-top:12px"><h2>No listed projects</h2><p class="quiet">List a project in SCF managing to show it here.</p></section>';
   const subtitle = ids.length > 1 ? 'Daily page views and unique visitors across all projects' : 'Daily page views and unique visitors for ' + nameOf(ids[0]);
   return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Web activity</h2><p>' + esc(subtitle) + '</p></div><span class="badge">Sample data</span></div>' + groupedChart([
     { name: 'Visitors', values: addSeries(ids, 'seriesVisitors'), color: '#f0a090' },
@@ -816,6 +850,103 @@ function privacyCard() {
 }
 function facts() {
   return '<div class="facts">' + privacyCard() + '<article class="panel"><h2>Free for every tenant</h2><p class="quiet">€0 enrollment. €0 tenant fees. Enrollment does not list a project on the dashboard.</p></article><article class="panel"><h2>Built on open source</h2><p class="quiet">Umami, MIT license. This spike adds the collector Umami does not ship.</p></article></div>';
+}
+const METRICS = { pages: 'Top pages', referrers: 'Referrers', countries: 'Countries', browsers: 'Browsers', devices: 'Devices' };
+const PIE = ['#d4c4ff', '#f0a090', '#9ed9bc', '#e4c48a', '#8f82b8', '#6d6558'];
+function categoryRows(ids, metric) {
+  if (!ids.length) return [];
+  if (metric === 'pages') {
+    return ids.flatMap((id) => stats(id).pages.map((page) => ({
+      name: ids.length > 1 ? nameOf(id) + ' · ' + page.path : page.path,
+      count: page.views,
+    }))).sort((a, b) => b.count - a.count).slice(0, 6);
+  }
+  const key = metric === 'status' ? 'countries' : metric;
+  return merged(ids, key).slice(0, 6);
+}
+function donut(rows, metric, large, interactive) {
+  const drawn = rows.filter((row) => row.count > 0);
+  if (!drawn.length) return '';
+  const total = sum(drawn, (row) => row.count) || 1;
+  const size = large ? 168 : 72;
+  const radius = large ? 58 : 24;
+  const width = large ? 18 : 10;
+  const center = size / 2;
+  const circ = 2 * Math.PI * radius;
+  if (drawn.length === 1) {
+    const only = interactive ? ' data-metric="' + metric + '" data-slice="' + esc(drawn[0].name) + '"' : '';
+    return '<svg class="donut' + (large ? ' large' : '') + '" viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="' + esc(drawn[0].name) + '"><circle cx="' + center + '" cy="' + center + '" r="' + radius + '" fill="none" stroke="' + PIE[0] + '" stroke-width="' + width + '"' + only + '><title>' + esc(drawn[0].name) + ' · ' + num(drawn[0].count) + '</title></circle></svg>';
+  }
+  let offset = 0;
+  const arcs = drawn.map((row, index) => {
+    const len = (row.count / total) * circ;
+    const gap = Math.min(2.5, len * 0.06);
+    const visible = Math.max(0, len - gap);
+    const attrs = interactive ? ' data-metric="' + metric + '" data-slice="' + esc(row.name) + '"' : '';
+    const node = '<circle class="slice" cx="' + center + '" cy="' + center + '" r="' + radius + '" fill="none" stroke="' + PIE[index % PIE.length] + '" stroke-width="' + (state.slice === row.name ? width + 3 : width) + '" stroke-dasharray="' + visible.toFixed(2) + ' ' + (circ - visible).toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '" transform="rotate(-90 ' + center + ' ' + center + ')"' + attrs + '><title>' + esc(row.name) + ' · ' + num(row.count) + ' · ' + pct(row.count / total) + '</title></circle>';
+    offset += len;
+    return node;
+  }).join('');
+  return '<svg class="donut' + (large ? ' large' : '') + '" viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="' + esc(METRICS[metric] || 'Breakdown') + '">' + arcs + '</svg>';
+}
+function metricCol(metric, ids) {
+  const rows = categoryRows(ids, metric);
+  const lines = rows.map((row) => '<button type="button" class="pick' + (state.metric === metric && state.slice === row.name ? ' on' : '') + '" data-metric="' + metric + '" data-slice="' + esc(row.name) + '"><span>' + esc(row.name) + '</span><span class="num">' + num(row.count) + '</span></button>').join('');
+  return '<section class="panel col metric-card' + (state.metric === metric ? ' on' : '') + '"><div class="metric-head"><button type="button" class="metric-title" data-metric="' + metric + '" aria-pressed="' + (state.metric === metric) + '">' + METRICS[metric] + '</button>' + donut(rows, metric, false, true) + '</div><div class="picks">' + lines + '</div></section>';
+}
+function metricBoard(ids) {
+  if (!ids.length) return activity(ids);
+  if (!state.metric || !METRICS[state.metric]) return activity(ids);
+  const rows = categoryRows(ids, state.metric);
+  const chosen = rows.find((row) => row.name === state.slice) || rows[0];
+  if (!chosen) return activity(ids);
+  const total = sum(rows, (row) => row.count) || 1;
+  const color = PIE[Math.max(0, rows.indexOf(chosen)) % PIE.length];
+  const series = wave(seedOf(ids[0], chosen.name.length + 4), POINTS[state.range], chosen.count);
+  const legend = rows.map((row, index) => '<button type="button" class="pick' + (row.name === chosen.name ? ' on' : '') + '" data-metric="' + state.metric + '" data-slice="' + esc(row.name) + '"><span class="who"><i class="swatch" style="background:' + PIE[index % PIE.length] + '"></i>' + esc(row.name) + '</span><b>' + pct(row.count / total) + '</b></button>').join('');
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>' + esc(METRICS[state.metric]) + '</h2><p>' + esc(chosen.name) + ' · ' + num(chosen.count) + ' in this range. Pick a row to change the chart.</p></div><button class="ghost" type="button" data-metric="traffic">Visitors and views</button></div><div class="metric-split">' + donut(rows, state.metric, true, true) + '<div class="metric-legend">' + legend + '</div>' + groupedChart([{ name: chosen.name, values: series, color: color }], chosen.name) + '</div></section>';
+}
+function statusPie(data) {
+  const rows = [
+    { name: '2xx', count: Math.max(0, data.requests - data.errors - data.client) },
+    { name: '4xx', count: data.client },
+    { name: '5xx', count: data.errors },
+  ];
+  const colors = ['#9ed9bc', '#e4c48a', '#f0a090'];
+  const saved = PIE.slice();
+  PIE.splice(0, PIE.length, ...colors);
+  const graphic = donut(rows, 'status', true, false);
+  PIE.splice(0, PIE.length, ...saved);
+  return '<div class="status-pie">' + graphic + '</div>';
+}
+function statusLabel(status) {
+  const map = { listed: ['ok', 'Listed'], hidden: ['warn', 'Enrolled'], pending: ['warn', 'Pending'], removed: ['bad', 'Removed'] };
+  const item = map[status] || map.hidden;
+  return '<span class="pill ' + item[0] + '">' + item[1] + '</span>';
+}
+function manageRecords() {
+  const known = (state.roster?.tenants || []).filter((tenant) => PROFILES[tenant.id]).map((tenant) => ({
+    id: tenant.id,
+    name: PROFILES[tenant.id].name,
+    detail: PROFILES[tenant.id].detail,
+    proof: tenant.id === 'alpha' ? 'stellar.toml' : 'Soroban contract',
+    status: listingOf(tenant.id),
+  }));
+  return known.concat(state.waiting.map((item) => ({ ...item, status: listingOf(item.id) })));
+}
+function manageActions(row) {
+  if (row.status === 'removed') return '<button class="ghost" type="button" data-manage="restore" data-id="' + esc(row.id) + '">Restore</button>';
+  const list = row.status === 'listed' ? '' : '<button class="ghost" type="button" data-manage="list" data-id="' + esc(row.id) + '">List</button>';
+  const hide = row.status === 'listed' ? '<button class="ghost" type="button" data-manage="hide" data-id="' + esc(row.id) + '">Hide</button>' : '';
+  return list + hide + '<button class="ghost" type="button" data-manage="remove" data-id="' + esc(row.id) + '">Remove</button>';
+}
+function manageView() {
+  const rows = manageRecords().map((row) => '<tr><td><span class="who"><span><strong>' + esc(row.name) + '</strong><span class="quiet">' + esc(row.detail) + '</span></span></span></td><td class="mono">' + esc(row.proof) + '</td><td>' + statusLabel(row.status) + '</td><td><div class="manage-actions">' + manageActions(row) + '</div></td></tr>').join('');
+  const keys = state.keys.map((key) => '<tr><td>' + esc(key.name) + '</td><td class="mono">' + esc(key.revoked ? 'revoked' : key.hint.slice(0, 12) + '••••') + '</td><td>' + (key.revoked ? '<span class="pill bad">Revoked</span>' : '<span class="pill ok">Active</span>') + '</td><td>' + (key.revoked ? '' : '<button class="ghost" type="button" data-manage="revoke" data-id="' + esc(key.id) + '">Revoke</button>') + '</td></tr>').join('');
+  const fresh = state.freshKey ? '<p class="key-line mono">' + esc(state.freshKey) + '</p>' : '';
+  return '<section class="panel"><div class="panel-head"><div><h2>Enrollment</h2><p>Open lets any Stellar project enroll. Approval required holds a new project until SCF accepts it. Neither action lists the project. Listing is separate, and SCF decides what the dashboard shows.</p></div><div class="switch"><button type="button" data-manage="open" aria-pressed="' + (!state.approval) + '">Open</button><button type="button" data-manage="approval" aria-pressed="' + state.approval + '">Approval required</button></div></div></section>' +
+    '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Projects</h2><p>Hide keeps the project enrolled and off the dashboard. Remove drops a project that is not part of the ecosystem. Quill is a sample application and has no traffic to chart.</p></div></div><div class="table-wrap"><table><thead><tr><th>Project</th><th>Proof</th><th>Dashboard</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div></section>' +
+    '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Metrics keys</h2><p>Operators mint and revoke keys for tools that read metrics. This demo shows the key once. The collector does not check it.</p></div><button class="primary" type="button" data-manage="mint">Generate key</button></div>' + fresh + '<div class="table-wrap"><table><thead><tr><th>Name</th><th>Key</th><th>Status</th><th></th></tr></thead><tbody>' + keys + '</tbody></table></div></section>';
 }
 function listCol(title, unit, rows, code) {
   const lines = rows.slice(0, 5).map((row) => '<div><span>' + (code ? '<code>' + esc(row.path) + '</code>' : esc(row.name)) + '</span><span class="num">' + num(row.count ?? row.views) + '</span></div>').join('');
@@ -1001,6 +1132,9 @@ function trafficChart(ids) {
 }
 function render() {
   const operator = state.role === 'operator';
+  document.querySelector('#nav-manage').hidden = !operator;
+  if (!operator && state.view === 'manage') state.view = 'overview';
+  document.querySelector('.toolbar').hidden = state.view === 'manage';
   const ids = scopeIds();
   const data = headline(ids);
   const animate = state.painted !== state.view + state.role + state.range;
@@ -1025,6 +1159,7 @@ function render() {
     api: ['API analytics', 'Volume, status, and latency for the selected range.'],
     compare: ['Projects', operator ? 'Sort, filter, and read projects side by side.' : 'This key can see only its own project.'],
     integration: ['Integration', 'The pinned script, and the live collector.'],
+    manage: ['SCF managing', 'List a project, remove one that is not on Stellar, and mint or revoke a metrics key.'],
   }[state.view];
   title.textContent = copy[0];
   lede.textContent = copy[1];
@@ -1034,18 +1169,15 @@ function render() {
     html = overviewKpis(data) + activity(ids) + projectTable(ids) + facts();
   } else if (state.view === 'web') {
     const rows = ids.flatMap((id) => stats(id).pages);
-    const pages = rows.slice().sort((a, b) => b.views - a.views);
-    html = webKpis(data) + activity(ids) + '<div class="cols">' +
-      listCol('Top pages', 'views', pages, true) +
-      listCol('Referrers', 'visitors', merged(ids, 'referrers'), false) +
-      listCol('Countries', 'visitors', merged(ids, 'countries'), false) +
-      listCol('Browsers', 'visitors', merged(ids, 'browsers'), false) +
-      listCol('Devices', 'visitors', merged(ids, 'devices'), false) +
+    html = webKpis(data) + metricBoard(ids) + '<div class="cols">' +
+      metricCol('pages', ids) + metricCol('referrers', ids) + metricCol('countries', ids) + metricCol('browsers', ids) + metricCol('devices', ids) +
       '</div>' + privacyCard() + '<section class="panel" style="margin-top:12px"><h2>Paths</h2>' + webTable(rows, operator) +
       '<p class="caption">Account, contract, and muxed addresses collapse, so one key does not become its own row.</p></section>' + facts();
   } else if (state.view === 'api') {
     const ok = data.requests - data.errors - data.client;
-    html = apiKpis(data) + '<div class="layout two"><section class="panel"><h2>HTTP status distribution</h2><div class="mini"><div><span>2xx · Successful</span><span class="num">' + num(ok) + '</span></div><div><span>4xx · Client error</span><span class="num">' + num(data.client) + '</span></div><div><span>5xx · Server error</span><span class="num">' + num(data.errors) + '</span></div></div></section>' + otelPanel() + '</div><section class="panel" style="margin-top:12px"><h2>Normalized endpoints</h2>' + filters(operator) + apiTable(visibleApi(ids), operator) + '</section>' + tryPanel() + facts();
+    html = apiKpis(data) + '<div class="layout two"><section class="panel"><h2>HTTP status distribution</h2>' + statusPie(data) + '<div class="mini"><div><span>2xx · Successful</span><span class="num">' + num(ok) + '</span></div><div><span>4xx · Client error</span><span class="num">' + num(data.client) + '</span></div><div><span>5xx · Server error</span><span class="num">' + num(data.errors) + '</span></div></div></section>' + otelPanel() + '</div><section class="panel" style="margin-top:12px"><h2>Normalized endpoints</h2>' + filters(operator) + apiTable(visibleApi(ids), operator) + '</section>' + tryPanel() + facts();
+  } else if (state.view === 'manage') {
+    html = manageView();
   } else if (state.view === 'compare' && ids.length > 1) {
     const [left, right] = ids.map(stats);
     const metrics = [
@@ -1245,9 +1377,66 @@ document.querySelector('#enroll form').addEventListener('submit', async (event) 
   if (!id) { result.textContent = 'A project id is required.'; return; }
   const response = await fetch('/tenants', { method: 'POST', headers: headers(), body: JSON.stringify({ id }) });
   const body = await response.json();
-  result.textContent = response.ok ? 'Token minted for ' + id + ': ' + body.token : (body.error || 'Could not enroll.');
+  if (response.ok && !state.waiting.some((item) => item.id === id) && !PROFILES[id]) {
+    state.waiting.push({ id, name: id, detail: 'Just enrolled', proof: 'Self-serve enrollment', status: state.approval ? 'pending' : 'hidden' });
+  }
+  result.textContent = response.ok ? 'Enrolled ' + id + '. It is not listed until SCF says so. Token: ' + body.token : (body.error || 'Could not enroll.');
 });
 stage.addEventListener('click', async (event) => {
+  const managed = event.target.closest('[data-manage]');
+  if (managed) {
+    const act = managed.dataset.manage;
+    const id = managed.dataset.id;
+    const waiting = state.waiting.find((item) => item.id === id);
+    if (act === 'open') state.approval = false;
+    if (act === 'approval') state.approval = true;
+    if (act === 'list') {
+      delete state.removed[id];
+      if (waiting) waiting.status = 'listed';
+      else state.listing[id] = 'listed';
+    }
+    if (act === 'hide') {
+      if (waiting) waiting.status = 'hidden';
+      else state.listing[id] = 'hidden';
+    }
+    if (act === 'remove') state.removed[id] = true;
+    if (act === 'restore') {
+      delete state.removed[id];
+      if (waiting) waiting.status = 'hidden';
+      else state.listing[id] = 'hidden';
+    }
+    if (act === 'mint') {
+      const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let suffix = '';
+      for (let index = 0; index < 8; index += 1) suffix += alphabet[Math.floor(Math.random() * alphabet.length)];
+      const token = 'scf_mtr_' + suffix;
+      state.keys.unshift({ id: suffix, name: 'Metrics key', hint: token, revoked: false });
+      state.freshKey = token;
+    }
+    if (act === 'revoke') {
+      const key = state.keys.find((item) => item.id === id);
+      if (key) key.revoked = true;
+      if (state.freshKey && key && state.freshKey === key.hint) state.freshKey = '';
+    }
+    render();
+    return;
+  }
+  const pick = event.target.closest('[data-metric]');
+  if (pick) {
+    if (pick.dataset.metric === 'traffic') {
+      state.metric = '';
+      state.slice = '';
+    } else if (pick.dataset.slice) {
+      state.metric = pick.dataset.metric;
+      state.slice = pick.dataset.slice;
+    } else if (state.metric !== pick.dataset.metric) {
+      state.metric = pick.dataset.metric;
+      state.slice = '';
+    }
+    state.view = 'web';
+    render();
+    return;
+  }
   const action = event.target.closest('[data-action]');
   const filter = event.target.closest('[data-filter]');
   const sort = event.target.closest('[data-sort]');

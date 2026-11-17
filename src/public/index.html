@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Prism Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:opsz,wght@9..144,520;9..144,620&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #100f0d;
+      --rail: #0c0b0a;
+      --surface: #181714;
+      --surface-2: #211f1b;
+      --line: rgba(243, 239, 230, 0.09);
+      --line-strong: rgba(243, 239, 230, 0.16);
+      --text: #f3efe6;
+      --muted: #a8a295;
+      --faint: #746e64;
+      --accent: #d4c4ff;
+      --good: #9ed9bc;
+      --warn: #e4c48a;
+      --bad: #f0a090;
+      --serif: "Fraunces", Georgia, serif;
+      --sans: "DM Sans", "Segoe UI", sans-serif;
+      --mono: "IBM Plex Mono", Consolas, monospace;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background:
+        radial-gradient(900px 420px at 12% -10%, rgba(212, 196, 255, 0.08), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14.5px;
+      line-height: 1.45;
+    }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: 0.42; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    ::selection { background: var(--accent); color: #1a1428; }
+    code, .mono { font-family: var(--mono); font-size: 12.5px; }
+    h1, h2, p { margin: 0; }
+    .app { display: grid; grid-template-columns: 228px minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 22px 14px 18px;
+      background: var(--rail);
+      border-right: 1px solid var(--line);
+    }
+    .brand { display: flex; gap: 12px; align-items: center; padding: 0 8px; }
+    .brand strong { display: block; font-family: var(--serif); font-weight: 520; font-size: 22px; letter-spacing: -0.03em; line-height: 1; }
+    .brand span { color: var(--faint); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+    nav { display: flex; flex-direction: column; gap: 4px; margin-top: 32px; }
+    nav button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 10px;
+      padding: 9px 10px;
+    }
+    nav button svg { flex: none; opacity: 0.8; }
+    nav button[aria-current="page"] { background: var(--surface-2); color: var(--text); }
+    nav button:hover:not([aria-current="page"]) { color: var(--text); }
+    .rail-foot { margin-top: auto; padding: 0 10px; color: var(--faint); font-size: 12px; line-height: 1.5; }
+    .workspace { padding: 26px 36px 72px; }
+    .workspace-inner { max-width: 1120px; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 26px;
+    }
+    .eyebrow { color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+    h1 { font-family: var(--serif); font-weight: 520; font-size: 40px; letter-spacing: -0.035em; line-height: 1.05; margin-top: 6px; }
+    .lede { color: var(--muted); margin-top: 8px; }
+    .top-tools { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+    .chip {
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .viewing { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .viewing p { color: var(--faint); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .switch { display: flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; }
+    .switch button { border: 0; background: transparent; color: var(--muted); border-radius: 999px; padding: 6px 12px; white-space: nowrap; }
+    .switch button[aria-pressed="true"] { background: var(--text); color: #16140f; }
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .kpi, .panel, .card, .receipt, .install {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+    .kpi { padding: 16px 18px 18px; }
+    .kpi .label, .panel h2, .card h2, .install h2 {
+      color: var(--faint);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .kpi .value { font-family: var(--serif); font-size: 36px; font-weight: 520; letter-spacing: -0.04em; margin-top: 12px; font-variant-numeric: tabular-nums; line-height: 1; }
+    .kpi .value.warn { color: var(--warn); }
+    .kpi .value.bad { color: var(--bad); }
+    .kpi .hint { color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+    .up { color: var(--good); }
+    .down { color: var(--bad); }
+    .chart { width: 100%; height: 220px; display: block; }
+    .axis { display: flex; justify-content: space-between; color: var(--faint); font-size: 11px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .legend-row { display: flex; gap: 16px; margin-bottom: 8px; color: var(--muted); font-size: 12.5px; }
+    .legend-row i { width: 8px; height: 8px; border-radius: 99px; display: inline-block; margin-right: 6px; }
+    .table-wrap { overflow-x: auto; }
+    .layout { display: grid; gap: 12px; margin-top: 12px; }
+    .two { grid-template-columns: 1.3fr 0.7fr; }
+    .split { grid-template-columns: 1fr 1fr; }
+    .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .panel, .install { padding: 18px 18px 16px; }
+    .panel h2, .install h2 { margin-bottom: 14px; }
+    .stack { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--surface-2); }
+    .stack span { display: block; height: 100%; }
+    .c0 { background: #d4c4ff; }
+    .c1 { background: #8f82b8; }
+    .c2 { background: #6d6558; }
+    .c3 { background: #463f36; }
+    .c4 { background: #2c2924; }
+    .s-ok { background: var(--good); }
+    .s-warn { background: var(--warn); }
+    .s-bad { background: var(--bad); }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 12px; }
+    .legend div { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; }
+    .swatch { width: 8px; height: 8px; border-radius: 99px; }
+    .bars { display: flex; flex-direction: column; gap: 12px; }
+    .bar-meta, .route-line { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+    .bar-meta span, .num { font-variant-numeric: tabular-nums; color: var(--muted); }
+    .track { margin-top: 6px; height: 4px; border-radius: 99px; background: #2a2723; }
+    .fill { height: 100%; border-radius: 99px; background: var(--accent); }
+    .project {
+      position: relative;
+      overflow: hidden;
+      padding: 18px 18px 16px;
+    }
+    .project::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; }
+    .project.lavender::before { background: var(--accent); }
+    .project.coral::before { background: var(--bad); }
+    .project .name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .project .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; margin-top: 16px; }
+    .project .stats strong { display: block; font-family: var(--serif); font-size: 26px; font-weight: 520; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .project .stats span, .quiet { color: var(--muted); font-size: 12.5px; }
+    .dot { width: 8px; height: 8px; border-radius: 99px; display: inline-block; }
+    .dot.lavender { background: var(--accent); }
+    .dot.coral { background: var(--bad); }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .filters button, .ghost {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 11px;
+    }
+    .filters button[aria-pressed="true"] { background: var(--text); color: #16140f; border-color: var(--text); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 11px 12px 11px 0; vertical-align: middle; }
+    th { color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+    th button { border: 0; background: transparent; color: inherit; letter-spacing: inherit; text-transform: inherit; font-size: inherit; font-weight: inherit; padding: 0; }
+    th button[aria-pressed="true"] { color: var(--text); }
+    td { border-top: 1px solid var(--line); }
+    tr:hover td { background: rgba(243, 239, 230, 0.02); }
+    .pill { display: inline-flex; min-width: 44px; justify-content: center; border-radius: 999px; padding: 2px 8px; font-variant-numeric: tabular-nums; font-size: 12px; }
+    .pill.ok { color: var(--good); background: rgba(158, 217, 188, 0.12); }
+    .pill.warn { color: var(--warn); background: rgba(228, 196, 138, 0.12); }
+    .pill.bad { color: var(--bad); background: rgba(240, 160, 144, 0.14); }
+    .who { display: inline-flex; align-items: center; gap: 8px; }
+    .card {
+      text-align: left;
+      padding: 16px;
+      width: 100%;
+    }
+    .card strong { display: block; margin: 8px 0 6px; font-weight: 600; }
+    .card span, .install p { color: var(--muted); }
+    .card:hover:not(:disabled) { border-color: rgba(212, 196, 255, 0.45); }
+    .receipt { margin-top: 12px; padding: 16px 18px; display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 8px 16px; }
+    .receipt.ok { background: rgba(158, 217, 188, 0.06); }
+    .receipt.blocked { background: rgba(212, 196, 255, 0.07); }
+    .receipt.bad { background: rgba(240, 160, 144, 0.08); }
+    .receipt dt { color: var(--faint); }
+    .receipt dd { margin: 0; }
+    .install { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: start; }
+    .install pre {
+      grid-column: 1 / -1;
+      margin: 8px 0 0;
+      padding: 12px 14px;
+      overflow: auto;
+      background: #100f0d;
+      border-radius: 12px;
+      color: #e7e1d6;
+      line-height: 1.55;
+    }
+    .empty { color: var(--muted); padding: 8px 0 12px; }
+    .caption { color: var(--faint); font-size: 12.5px; margin-top: 12px; }
+    .gate { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .gate form { width: min(420px, 100%); padding: 22px; }
+    .gate h1 { font-size: 32px; }
+    .gate input {
+      width: 100%;
+      margin: 16px 0 10px;
+      border: 1px solid var(--line-strong);
+      background: #100f0d;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .gate button { width: 100%; border: 0; border-radius: 12px; padding: 11px 14px; background: var(--text); color: #16140f; }
+    .enter { animation: rise 220ms ease; }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { .enter { animation: none; } }
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { flex-direction: row; overflow: auto; margin-top: 16px; }
+      .rail-foot { display: none; }
+      .kpis, .two, .split { grid-template-columns: 1fr 1fr; }
+      .top { align-items: flex-start; flex-direction: column; }
+      .viewing { align-items: flex-start; }
+    }
+    @media (max-width: 680px) {
+      .workspace { padding: 20px 16px 48px; }
+      h1 { font-size: 32px; }
+      .kpis, .two, .split, .three, .receipt, .install { grid-template-columns: 1fr; }
+      .install pre { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div id="gate" class="gate" hidden>
+    <form class="panel">
+      <p class="eyebrow">Web and API analytics</p>
+      <h1>Open a project</h1>
+      <p class="lede">Paste a project or operator token.</p>
+      <input id="token" name="token" autocomplete="off" placeholder="Token" />
+      <button type="submit">Open</button>
+      <p id="gate-error" class="caption"></p>
+    </form>
+  </div>
+  <div id="app" class="app" hidden>
+    <aside>
+      <div class="brand">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+          <path d="M12 3.2 20.5 20.2H3.5Z" fill="none" stroke="#d4c4ff" stroke-width="1.5" />
+          <path d="M12 3.2 12 20.2" stroke="#f0a090" stroke-width="1.3" />
+        </svg>
+        <div>
+          <strong>Prism</strong>
+          <span>Analytics</span>
+        </div>
+      </div>
+      <nav id="nav" aria-label="Sections">
+        <button type="button" data-view="overview">Overview</button>
+        <button type="button" data-view="web">Web</button>
+        <button type="button" data-view="api">API</button>
+        <button type="button" data-view="compare" id="nav-compare">Compare</button>
+      </nav>
+      <p class="rail-foot">No cookies. Span and log bodies are dropped on ingest. A project cannot read another project.</p>
+    </aside>
+    <div class="workspace">
+      <div class="workspace-inner">
+        <header class="top">
+          <div>
+            <p class="eyebrow">Web and API analytics</p>
+            <h1 id="title">Prism</h1>
+            <p id="lede" class="lede"></p>
+          </div>
+          <div class="top-tools">
+            <div class="viewing">
+              <p>Range</p>
+              <div id="range" class="switch" role="group" aria-label="Time range"></div>
+            </div>
+            <div class="viewing">
+              <p>Viewing</p>
+              <div id="switcher" class="switch" role="group" aria-label="Viewing"></div>
+            </div>
+          </div>
+        </header>
+        <div id="stage"></div>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+const ACCOUNT = 'G' + 'A'.repeat(55);
+const RANGES = ['24h', '7d', '30d', '90d'];
+const POINTS = { '24h': 24, '7d': 7, '30d': 30, '90d': 30 };
+const SCALE = { '24h': 0.034, '7d': 0.22, '30d': 1, '90d': 2.85 };
+const AXIS = {
+  '24h': ['Yesterday 12:00', '00:00', 'Now'],
+  '7d': ['Nov 11', 'Nov 14', 'Nov 17'],
+  '30d': ['Oct 18', 'Nov 2', 'Nov 17'],
+  '90d': ['Aug 19', 'Oct 3', 'Nov 17'],
+};
+const PRIOR = { '24h': 'prior day', '7d': 'prior week', '30d': 'prior 30 days', '90d': 'prior 90 days' };
+const SNIPPET = '<script defer src="https://s.example/s/v1.0.0/s.js" data-website-id="SITE_ID" integrity="sha384-..." crossorigin="anonymous"><\/script>';
+
+const PROFILES = {
+  alpha: {
+    name: 'Northwind', detail: 'Wallet and payments', hue: 'lavender',
+    pageviews: 48210, visitors: 19440, bounce: 0.384, durationSec: 134, apiRequests: 186400,
+    delta: { pageviews: 0.084, visitors: 0.051, bounce: -0.012, duration: 0.037, requests: 0.112, errors: -0.021 },
+    pages: [
+      { path: '/', share: 0.41, bounce: 0.29, duration: 52 },
+      { path: '/swap', share: 0.22, bounce: 0.33, duration: 96 },
+      { path: '/accounts/:account', share: 0.14, bounce: 0.22, duration: 214 },
+      { path: '/markets/usdc', share: 0.11, bounce: 0.41, duration: 74 },
+      { path: '/portfolio', share: 0.07, bounce: 0.18, duration: 248 },
+      { path: '/docs', share: 0.05, bounce: 0.62, duration: 38 },
+    ],
+    referrers: [
+      { name: 'Direct', share: 0.38 }, { name: 'stellar.org', share: 0.21 }, { name: 'lab.stellar.org', share: 0.14 },
+      { name: 'github.com', share: 0.11 }, { name: 'x.com', share: 0.09 }, { name: 'Discord', share: 0.07 },
+    ],
+    countries: [
+      { name: 'United States', share: 0.28 }, { name: 'Germany', share: 0.14 }, { name: 'Brazil', share: 0.11 },
+      { name: 'Nigeria', share: 0.09 }, { name: 'South Korea', share: 0.08 }, { name: 'United Kingdom', share: 0.07 },
+    ],
+    devices: [{ name: 'Desktop', share: 0.62 }, { name: 'Mobile', share: 0.34 }, { name: 'Tablet', share: 0.04 }],
+    browsers: [{ name: 'Chrome', share: 0.58 }, { name: 'Firefox', share: 0.18 }, { name: 'Safari', share: 0.14 }, { name: 'Edge', share: 0.1 }],
+    api: [
+      { service: 'payments', route: '/accounts/:account/payments/:id', status: 200, share: 0.62, p50: 50, p95: 250 },
+      { service: 'payments', route: '/accounts/:account/payments/:id', status: 201, share: 0.12, p50: 100, p95: 250 },
+      { service: 'payments', route: '/accounts/:account/payments/:id', status: 404, share: 0.04, p50: 25, p95: 50 },
+      { service: 'rpc', route: '/contracts/:contract', status: 200, share: 0.18, p50: 100, p95: 250 },
+      { service: 'rpc', route: '/contracts/:contract', status: 500, share: 0.04, p50: 1000, p95: 2500 },
+    ],
+  },
+  beta: {
+    name: 'Harbor', detail: 'Markets', hue: 'coral',
+    pageviews: 30110, visitors: 9800, bounce: 0.512, durationSec: 78, apiRequests: 94200,
+    delta: { pageviews: 0.041, visitors: 0.016, bounce: 0.008, duration: -0.02, requests: 0.063, errors: 0.014 },
+    pages: [
+      { path: '/', share: 0.34, bounce: 0.46, duration: 40 },
+      { path: '/markets/usdc', share: 0.28, bounce: 0.38, duration: 126 },
+      { path: '/trade', share: 0.18, bounce: 0.44, duration: 154 },
+      { path: '/markets/:id', share: 0.12, bounce: 0.52, duration: 88 },
+      { path: '/contracts/:contract', share: 0.08, bounce: 0.61, duration: 36 },
+    ],
+    referrers: [
+      { name: 'Direct', share: 0.31 }, { name: 'stellar.org', share: 0.24 }, { name: 'defillama.com', share: 0.16 },
+      { name: 'x.com', share: 0.14 }, { name: 'github.com', share: 0.09 }, { name: 'Discord', share: 0.06 },
+    ],
+    countries: [
+      { name: 'United States', share: 0.22 }, { name: 'Germany', share: 0.16 }, { name: 'Singapore', share: 0.12 },
+      { name: 'Brazil', share: 0.11 }, { name: 'South Korea', share: 0.09 }, { name: 'Nigeria', share: 0.08 },
+    ],
+    devices: [{ name: 'Desktop', share: 0.71 }, { name: 'Mobile', share: 0.26 }, { name: 'Tablet', share: 0.03 }],
+    browsers: [{ name: 'Chrome', share: 0.64 }, { name: 'Firefox', share: 0.16 }, { name: 'Safari', share: 0.12 }, { name: 'Edge', share: 0.08 }],
+    api: [
+      { service: 'quotes', route: '/markets/usdc', status: 200, share: 0.55, p50: 25, p95: 100 },
+      { service: 'quotes', route: '/markets/:id', status: 200, share: 0.22, p50: 50, p95: 250 },
+      { service: 'payments', route: '/accounts/:account/payments/:id', status: 200, share: 0.14, p50: 100, p95: 250 },
+      { service: 'payments', route: '/accounts/:account/payments/:id', status: 500, share: 0.09, p50: 1000, p95: 2500 },
+    ],
+  },
+};
+
+const state = {
+  token: '', role: '', tenantId: '', roster: null, view: 'overview', range: '30d',
+  status: 'all', project: 'all', sort: 'requests', receipt: null, busy: false, painted: '',
+  extra: { alpha: { views: 0, paths: {}, api: {} }, beta: { views: 0, paths: {}, api: {} } },
+};
+
+const stage = document.querySelector('#stage');
+const title = document.querySelector('#title');
+const lede = document.querySelector('#lede');
+let chartSeq = 0;
+
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
+}
+function num(value) { return Number(value || 0).toLocaleString('en'); }
+function pct(value) { return (value * 100).toFixed(1) + '%'; }
+function duration(seconds) {
+  const rounded = Math.max(0, Math.round(seconds));
+  const minutes = Math.floor(rounded / 60);
+  const rest = rounded % 60;
+  return minutes ? minutes + 'm ' + String(rest).padStart(2, '0') + 's' : rest + 's';
+}
+function ms(value) {
+  if (value == null) return '—';
+  return value >= 1000 ? (value / 1000).toLocaleString('en', { maximumFractionDigits: 1 }) + ' s' : value + ' ms';
+}
+function nameOf(id) { return PROFILES[id]?.name ?? id; }
+function hueOf(id) { return PROFILES[id]?.hue ?? 'lavender'; }
+function headers() { return { authorization: 'Bearer ' + state.token, 'content-type': 'application/json' }; }
+function tone(code) { return code >= 500 ? 'bad' : code >= 400 ? 'warn' : 'ok'; }
+function sum(rows, pick) { return rows.reduce((total, row) => total + pick(row), 0); }
+function seedOf(id, salt) {
+  let hash = (id === 'alpha' ? 101 : 307) + salt * 17 + state.range.length * 13;
+  return hash >>> 0;
+}
+function wave(seed, count, total) {
+  let value = seed >>> 0;
+  const next = () => {
+    value = (value + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(value ^ (value >>> 15), 1 | value);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const raw = [];
+  for (let index = 0; index < count; index += 1) {
+    const cycle = 0.72 + 0.38 * Math.sin((index / count) * Math.PI * (count > 12 ? 6 : 2));
+    raw.push(cycle * (0.65 + next() * 0.7));
+  }
+  const weight = raw.reduce((total, item) => total + item, 0) || 1;
+  const points = raw.map((item) => Math.max(0, Math.round((item / weight) * total)));
+  const drift = total - points.reduce((total, item) => total + item, 0);
+  points[points.length - 1] += drift;
+  return points;
+}
+function shareRows(items, total) {
+  return items.map((item) => ({ ...item, count: Math.round(item.share * total) }));
+}
+function stats(id) {
+  const profile = PROFILES[id];
+  const extra = state.extra[id];
+  const scale = SCALE[state.range];
+  const baseViews = Math.round(profile.pageviews * scale);
+  const visitors = Math.round(profile.visitors * scale);
+  const bounceShift = state.range === '24h' ? 0.018 : state.range === '90d' ? -0.012 : 0;
+  const durationShift = state.range === '24h' ? -8 : state.range === '7d' ? 4 : 0;
+  const pages = profile.pages.map((page) => {
+    const views = Math.round(page.share * baseViews) + (extra.paths[page.path] || 0);
+    const ratio = profile.visitors / profile.pageviews;
+    const pageVisitors = Math.min(views, Math.max(1, Math.round(views * ratio * (1.2 - page.bounce))));
+    return { ...page, tenantId: id, views, visitors: pageVisitors };
+  });
+  const views = pages.reduce((total, page) => total + page.views, 0);
+  const api = profile.api.map((row) => {
+    const key = row.service + '|' + row.route + '|' + row.status;
+    return { ...row, tenantId: id, count: Math.round(row.share * Math.round(profile.apiRequests * scale)) + (extra.api[key] || 0) };
+  });
+  const requests = sum(api, (row) => row.count);
+  const errors = sum(api.filter((row) => row.status >= 500), (row) => row.count);
+  const client = sum(api.filter((row) => row.status >= 400 && row.status < 500), (row) => row.count);
+  const busiest = api.slice().sort((a, b) => b.count - a.count)[0];
+  const slowest = api.slice().sort((a, b) => (b.p95 ?? 0) - (a.p95 ?? 0))[0];
+  return {
+    id, views, visitors, bounce: profile.bounce + bounceShift, duration: profile.durationSec + durationShift,
+    pages, api, requests, errors, client, errorRate: requests ? errors / requests : 0,
+    p50: busiest?.p50 ?? null, p95: slowest?.p95 ?? null,
+    seriesViews: wave(seedOf(id, 1), POINTS[state.range], views),
+    seriesVisitors: wave(seedOf(id, 2), POINTS[state.range], visitors),
+    referrers: shareRows(profile.referrers, visitors),
+    countries: shareRows(profile.countries, visitors),
+    devices: shareRows(profile.devices, visitors),
+    browsers: shareRows(profile.browsers, visitors),
+    delta: profile.delta,
+  };
+}
+function scopeIds() {
+  return state.role === 'operator' ? state.roster.tenants.map((tenant) => tenant.id) : [state.tenantId];
+}
+function merged(ids, key) {
+  const map = new Map();
+  for (const id of ids) {
+    for (const row of stats(id)[key]) map.set(row.name, (map.get(row.name) || 0) + row.count);
+  }
+  return [...map.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+}
+function headline(ids) {
+  const parts = ids.map(stats);
+  const views = sum(parts, (part) => part.views);
+  const visitors = sum(parts, (part) => part.visitors);
+  const requests = sum(parts, (part) => part.requests);
+  const errors = sum(parts, (part) => part.errors);
+  const client = sum(parts, (part) => part.client);
+  const bounce = views ? sum(parts, (part) => part.bounce * part.views) / views : 0;
+  const visit = visitors ? sum(parts, (part) => part.duration * part.visitors) / visitors : 0;
+  const p95 = Math.max(...parts.map((part) => part.p95 ?? 0));
+  const p50 = parts.slice().sort((a, b) => b.requests - a.requests)[0]?.p50 ?? null;
+  const blend = (key) => {
+    const weight = sum(parts, (part) => part.views) || 1;
+    return sum(parts, (part) => part.delta[key] * part.views) / weight;
+  };
+  return { views, visitors, requests, errors, client, bounce, duration: visit, p50, p95, errorRate: requests ? errors / requests : 0, delta: { pageviews: blend('pageviews'), visitors: blend('visitors'), bounce: blend('bounce'), duration: blend('duration'), requests: blend('requests'), errors: blend('errors') } };
+}
+function change(value, goodWhenUp) {
+  const up = value >= 0;
+  const good = goodWhenUp ? up : !up;
+  return '<span class="' + (good ? 'up' : 'down') + '">' + (up ? '↑ ' : '↓ ') + Math.abs(value * 100).toFixed(1) + '%</span> vs ' + PRIOR[state.range];
+}
+function kpi(label, value, hint) {
+  return '<article class="kpi"><p class="label">' + label + '</p><p class="value">' + value + '</p><p class="hint">' + hint + '</p></article>';
+}
+function webKpis(data) {
+  return '<section class="kpis">' +
+    kpi('Pageviews', num(data.views), change(data.delta.pageviews, true)) +
+    kpi('Visitors', num(data.visitors), change(data.delta.visitors, true)) +
+    kpi('Bounce rate', pct(data.bounce), change(data.delta.bounce, false)) +
+    kpi('Visit duration', duration(data.duration), change(data.delta.duration, true)) +
+    '</section>';
+}
+function apiKpis(data) {
+  return '<section class="kpis" style="margin-top:12px">' +
+    kpi('API requests', num(data.requests), change(data.delta.requests, true)) +
+    kpi('Error rate', pct(data.errorRate), change(data.delta.errors, false)) +
+    kpi('p50', ms(data.p50), 'Busiest route, bucket ceiling') +
+    kpi('p95', ms(data.p95), 'Slowest route, bucket ceiling') +
+    '</section>';
+}
+function bars(rows, mono) {
+  if (!rows.length) return '<p class="empty">No rows in this range.</p>';
+  const max = Math.max(...rows.map((row) => row.count ?? row.views), 1);
+  return '<div class="bars">' + rows.map((row) => {
+    const count = row.count ?? row.views;
+    const width = Math.max(3, Math.round((count / max) * 100));
+    const label = mono ? '<code>' + esc(row.path) + '</code>' : esc(row.label || row.name);
+    return '<div><div class="bar-meta"><span>' + label + '</span><span>' + num(count) + '</span></div><div class="track"><div class="fill" style="width:' + width + '%"></div></div></div>';
+  }).join('') + '</div>';
+}
+function stack(parts) {
+  const total = parts.reduce((summed, part) => summed + part.value, 0) || 1;
+  return '<div class="stack" aria-hidden="true">' + parts.filter((part) => part.value > 0).map((part) =>
+    '<span class="' + part.className + '" style="width:' + (part.value / total) * 100 + '%"></span>').join('') +
+    '</div><div class="legend">' + parts.map((part) =>
+    '<div><i class="swatch ' + part.className + '"></i>' + esc(part.label) + ' · ' + pct(part.value / total) + '</div>').join('') + '</div>';
+}
+function chart(series, label) {
+  const id = 'g' + (chartSeq += 1);
+  const width = 640;
+  const height = 200;
+  const pad = 12;
+  const max = Math.max(...series.flatMap((item) => item.values), 1);
+  const step = (width - pad * 2) / Math.max(series[0].values.length - 1, 1);
+  const line = (values) => values.map((value, index) => {
+    const x = pad + index * step;
+    const y = height - pad - (value / max) * (height - pad * 2);
+    return (index ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+  }).join(' ');
+  const first = series[0];
+  const area = line(first.values) + ' L ' + (pad + (first.values.length - 1) * step).toFixed(1) + ' ' + (height - pad) + ' L ' + pad + ' ' + (height - pad) + ' Z';
+  const grid = [0.25, 0.5, 0.75].map((ratio) => {
+    const y = (pad + (height - pad * 2) * (1 - ratio)).toFixed(1);
+    return '<line x1="' + pad + '" x2="' + (width - pad) + '" y1="' + y + '" y2="' + y + '" stroke="rgba(243,239,230,0.08)" />';
+  }).join('');
+  const strokes = series.map((item, index) => index === 0
+    ? '<path d="' + area + '" fill="url(#' + id + ')"/><path d="' + line(item.values) + '" fill="none" stroke="' + item.color + '" stroke-width="1.8"/>'
+    : '<path d="' + line(item.values) + '" fill="none" stroke="' + item.color + '" stroke-width="1.8"/>').join('');
+  return '<div class="legend-row">' + series.map((item) => '<span><i style="background:' + item.color + '"></i>' + esc(item.name) + '</span>').join('') +
+    '</div><svg class="chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="' + esc(label) + '"><defs><linearGradient id="' + id + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="' + first.color + '" stop-opacity="0.42"/><stop offset="1" stop-color="' + first.color + '" stop-opacity="0"/></linearGradient></defs>' +
+    grid + strokes + '</svg><div class="axis">' + AXIS[state.range].map((item) => '<span>' + item + '</span>').join('') + '</div>';
+}
+function filters(includeProjects) {
+  const status = ['all', '2xx', '4xx', '5xx'].map((value) =>
+    '<button type="button" data-filter="status" data-value="' + value + '" aria-pressed="' + (state.status === value) + '">' + (value === 'all' ? 'All statuses' : value) + '</button>').join('');
+  const projects = includeProjects
+    ? ['all'].concat(state.roster.tenants.map((tenant) => tenant.id)).map((value) =>
+      '<button type="button" data-filter="project" data-value="' + value + '" aria-pressed="' + (state.project === value) + '">' + (value === 'all' ? 'All projects' : nameOf(value)) + '</button>').join('')
+    : '';
+  return '<div class="filters">' + projects + status + '</div>';
+}
+function visibleApi(ids) {
+  return ids.flatMap((id) => stats(id).api)
+    .filter((row) => state.project === 'all' || row.tenantId === state.project)
+    .filter((row) => {
+      if (state.status === '2xx') return row.status >= 200 && row.status < 300;
+      if (state.status === '4xx') return row.status >= 400 && row.status < 500;
+      if (state.status === '5xx') return row.status >= 500;
+      return true;
+    })
+    .sort((a, b) => {
+      if (state.sort === 'p95') return (b.p95 ?? -1) - (a.p95 ?? -1) || b.count - a.count;
+      if (state.sort === 'status') return a.status - b.status || b.count - a.count;
+      return b.count - a.count || a.route.localeCompare(b.route);
+    });
+}
+function apiTable(rows, showProject) {
+  if (!rows.length) return '<p class="empty">Nothing matches this filter.</p>';
+  const head = (showProject ? '<th>Project</th>' : '') + '<th>Service</th><th>Route</th><th>Status</th><th><button type="button" data-sort="requests" aria-pressed="' + (state.sort === 'requests') + '">Requests</button></th><th>p50</th><th><button type="button" data-sort="p95" aria-pressed="' + (state.sort === 'p95') + '">p95</button></th>';
+  const body = rows.map((row) => '<tr>' +
+    (showProject ? '<td><span class="who"><i class="dot ' + hueOf(row.tenantId) + '"></i>' + esc(nameOf(row.tenantId)) + '</span></td>' : '') +
+    '<td>' + esc(row.service) + '</td><td><code>' + esc(row.route) + '</code></td><td><span class="pill ' + tone(row.status) + '">' + row.status + '</span></td><td class="num">' + num(row.count) + '</td><td class="num">' + ms(row.p50) + '</td><td class="num">' + ms(row.p95) + '</td></tr>').join('');
+  return '<div class="table-wrap"><table><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table></div><p class="caption">p50 and p95 are the histogram bucket ceiling, so a 40 ms call is reported as 50 ms.</p>';
+}
+function webTable(rows, showProject) {
+  const ranked = rows.slice().sort((a, b) => b.views - a.views);
+  const total = sum(ranked, (row) => row.views) || 1;
+  const body = ranked.map((row) => '<tr>' +
+    (showProject ? '<td><span class="who"><i class="dot ' + hueOf(row.tenantId) + '"></i>' + esc(nameOf(row.tenantId)) + '</span></td>' : '') +
+    '<td><code>' + esc(row.path) + '</code></td><td class="num">' + num(row.views) + '</td><td class="num">' + num(row.visitors) + '</td><td class="num">' + pct(row.bounce) + '</td><td class="num">' + duration(row.duration) + '</td><td class="num">' + pct(row.views / total) + '</td></tr>').join('');
+  return '<div class="table-wrap"><table><thead><tr>' + (showProject ? '<th>Project</th>' : '') + '<th>Path</th><th>Views</th><th>Visitors</th><th>Bounce</th><th>Duration</th><th>Share</th></tr></thead><tbody>' + body + '</tbody></table></div>';
+}
+function projectCard(id) {
+  const data = stats(id);
+  const meta = PROFILES[id];
+  const cells = [
+    ['Pageviews', num(data.views)], ['Visitors', num(data.visitors)], ['Bounce', pct(data.bounce)], ['Duration', duration(data.duration)],
+    ['API requests', num(data.requests)], ['Error rate', pct(data.errorRate)], ['p50', ms(data.p50)], ['p95', ms(data.p95)],
+  ].map((cell) => '<div><strong>' + cell[1] + '</strong><span>' + cell[0] + '</span></div>').join('');
+  return '<article class="panel project ' + meta.hue + '"><div class="name"><i class="dot ' + meta.hue + '"></i>' + esc(meta.name) + '</div><p class="quiet">' + esc(meta.detail) + '</p><div class="stats">' + cells + '</div></article>';
+}
+function receipt() {
+  if (!state.receipt) return '';
+  return '<dl class="receipt ' + state.receipt.tone + '" aria-live="polite"><dt>Result</dt><dd>' + esc(state.receipt.title) + '</dd>' +
+    state.receipt.rows.map((row) => '<dt>' + esc(row[0]) + '</dt><dd class="mono">' + esc(row[1]) + '</dd>').join('') + '</dl>';
+}
+function actions() {
+  const operator = state.role === 'operator';
+  const disabled = operator || state.busy ? ' disabled' : '';
+  const other = state.tenantId === 'beta' ? 'Northwind' : 'Harbor';
+  return '<div class="layout three"><button class="card" type="button" data-action="page"' + disabled + '><p class="label">Web</p><strong>Record a page view</strong><span>Send a Stellar account path and store the normalized form.</span></button><button class="card" type="button" data-action="api"' + disabled + '><p class="label">API</p><strong>Send an API call</strong><span>Keep route, status, and latency. Drop the span and the log.</span></button>' +
+    (operator
+      ? '<button class="card" type="button" data-action="compare"><p class="label">Operator</p><strong>Compare projects</strong><span>Same web and API numbers, side by side.</span></button>'
+      : '<button class="card" type="button" data-action="peek"' + disabled + '><p class="label">Isolation</p><strong>Read ' + other + '</strong><span>Ask for the other project with this key. It should be refused.</span></button>') +
+    '</div>' + receipt();
+}
+function install() {
+  return '<section class="install"><div><h2>Install</h2><p>One script tag. The file is versioned and the hash is pinned. Placeholders stand in for the live host.</p></div><button class="ghost" type="button" data-action="copy">Copy</button><pre class="mono">' + esc(SNIPPET) + '</pre></section>';
+}
+function breakdown(ids) {
+  const many = ids.length > 1;
+  const pages = ids.flatMap((id) => stats(id).pages.map((page) => ({ ...page, label: many ? nameOf(id) + ' · ' + page.path : page.path }))).sort((a, b) => b.views - a.views).slice(0, 6);
+  const data = headline(ids);
+  return '<div class="layout two"><section class="panel"><h2>Pages</h2>' + bars(pages, !many) +
+    '</section><section class="panel"><h2>Referrers</h2>' + bars(merged(ids, 'referrers').slice(0, 6), false) +
+    '</section></div><div class="layout two"><section class="panel"><h2>Countries</h2>' + bars(merged(ids, 'countries'), false) +
+    '</section><section class="panel"><h2>Devices and browsers</h2>' +
+    stack(merged(ids, 'devices').map((row, index) => ({ label: row.name, value: row.count, className: 'c' + index }))) +
+    '<div style="margin-top:16px">' + bars(merged(ids, 'browsers'), false) + '</div></section></div>' +
+    '<section class="panel" style="margin-top:12px"><h2>Status mix</h2>' +
+    stack([{ label: 'Success', value: data.requests - data.errors - data.client, className: 's-ok' }, { label: 'Client errors', value: data.client, className: 's-warn' }, { label: 'Server errors', value: data.errors, className: 's-bad' }]) +
+    '</section>';
+}
+function volumeChart(ids) {
+  return chart(ids.map((id) => ({
+    name: ids.length === 1 ? 'Requests' : nameOf(id),
+    values: wave(seedOf(id, 3), POINTS[state.range], stats(id).requests),
+    color: id === 'alpha' || ids.length === 1 ? '#d4c4ff' : '#f0a090',
+  })), 'API requests');
+}
+function trafficChart(ids) {
+  if (ids.length === 1) {
+    const data = stats(ids[0]);
+    return chart([
+      { name: 'Pageviews', values: data.seriesViews, color: '#d4c4ff' },
+      { name: 'Visitors', values: data.seriesVisitors, color: '#f0a090' },
+    ], 'Pageviews and visitors');
+  }
+  return chart(ids.map((id) => ({ name: nameOf(id), values: stats(id).seriesViews, color: id === 'alpha' ? '#d4c4ff' : '#f0a090' })), 'Pageviews by project');
+}
+function render() {
+  const operator = state.role === 'operator';
+  const ids = scopeIds();
+  const data = headline(ids);
+  const animate = state.painted !== state.view + state.role + state.range;
+  state.painted = state.view + state.role + state.range;
+  document.querySelector('#nav-compare').hidden = !operator;
+  for (const button of document.querySelectorAll('#nav button')) {
+    if (button.dataset.view === state.view) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  }
+  for (const button of document.querySelectorAll('#switcher button')) {
+    button.setAttribute('aria-pressed', button.dataset.role === state.role ? 'true' : 'false');
+  }
+  for (const button of document.querySelectorAll('#range button')) {
+    button.setAttribute('aria-pressed', button.dataset.range === state.range ? 'true' : 'false');
+  }
+  const current = operator ? null : PROFILES[state.tenantId];
+  const copy = {
+    overview: operator ? ['Ecosystem', 'Every enrolled project, on the same definitions.'] : [current?.name ?? 'Project', (current?.detail ?? 'This project') + ' · other projects stay hidden'],
+    web: ['Web', operator ? 'Pages, referrers, country, device, and browser across projects.' : 'Pages, referrers, country, device, and browser.'],
+    api: ['API', 'Volume, status, and latency for the selected range.'],
+    compare: ['Compare', 'Sort, filter, and read two projects side by side.'],
+  }[state.view];
+  title.textContent = copy[0];
+  lede.textContent = copy[1];
+  document.title = copy[0] + ' · Prism Analytics';
+  let html = '';
+  if (state.view === 'overview') {
+    html = webKpis(data) + '<section class="panel" style="margin-top:12px"><h2>Traffic</h2>' + trafficChart(ids) + '</section>' +
+      breakdown(ids) + apiKpis(data) + (operator ? '<div class="layout split" style="margin-top:12px">' + ids.map(projectCard).join('') + '</div>' : '') +
+      '<div class="layout" style="margin-top:12px">' + actions() + '</div>';
+  } else if (state.view === 'web') {
+    const rows = ids.flatMap((id) => stats(id).pages);
+    html = (operator ? '' : install()) + webKpis(data) + '<section class="panel" style="margin-top:12px"><h2>Paths</h2>' + webTable(rows, operator) +
+      '<p class="caption">Account, contract, and muxed addresses collapse, so one key does not become its own row.</p></section>' +
+      '<div class="layout two"><section class="panel"><h2>Referrers</h2>' + bars(merged(ids, 'referrers'), false) +
+      '</section><section class="panel"><h2>Countries</h2>' + bars(merged(ids, 'countries'), false) +
+      '</section></div><section class="panel" style="margin-top:12px"><h2>Devices and browsers</h2>' +
+      stack(merged(ids, 'devices').map((row, index) => ({ label: row.name, value: row.count, className: 'c' + index }))) +
+      '<div style="margin-top:16px">' + bars(merged(ids, 'browsers'), false) + '</div></section>';
+  } else if (state.view === 'api') {
+    html = apiKpis(data) + '<section class="panel" style="margin-top:12px"><h2>Volume</h2>' + volumeChart(ids) + '</section><section class="panel" style="margin-top:12px"><h2>Routes</h2>' + filters(operator) + apiTable(visibleApi(ids), operator) + '</section>';
+  } else {
+    const [left, right] = ids.map(stats);
+    const metrics = [
+      ['Pageviews', num(left.views), num(right.views)],
+      ['Visitors', num(left.visitors), num(right.visitors)],
+      ['Bounce rate', pct(left.bounce), pct(right.bounce)],
+      ['Visit duration', duration(left.duration), duration(right.duration)],
+      ['Top referrer', left.referrers[0].name, right.referrers[0].name],
+      ['Top country', left.countries[0].name, right.countries[0].name],
+      ['API requests', num(left.requests), num(right.requests)],
+      ['Error rate', pct(left.errorRate), pct(right.errorRate)],
+      ['p95', ms(left.p95), ms(right.p95)],
+    ];
+    html = '<div class="layout split">' + ids.map(projectCard).join('') + '</div><section class="panel" style="margin-top:12px"><h2>Same numbers</h2><div class="table-wrap"><table><thead><tr><th>Metric</th><th>' + esc(nameOf(left.id)) + '</th><th>' + esc(nameOf(right.id)) + '</th></tr></thead><tbody>' +
+      metrics.map((row) => '<tr><td>' + row[0] + '</td><td class="num">' + esc(row[1]) + '</td><td class="num">' + esc(row[2]) + '</td></tr>').join('') +
+      '</tbody></table></div></section><section class="panel" style="margin-top:12px"><h2>Routes</h2>' + filters(true) + apiTable(visibleApi(ids), true) + '</section>';
+  }
+  stage.innerHTML = html;
+  stage.classList.toggle('enter', animate);
+}
+function selectRole(role, token, tenantId) {
+  state.role = role;
+  state.token = token;
+  state.tenantId = tenantId || '';
+  state.project = 'all';
+  state.receipt = null;
+  if (state.view === 'compare' && role !== 'operator') state.view = 'overview';
+  document.querySelector('#app').hidden = false;
+  document.querySelector('#gate').hidden = true;
+  render();
+}
+function buildSwitcher() {
+  const host = document.querySelector('#switcher');
+  host.replaceChildren();
+  for (const tenant of state.roster.tenants) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.role = tenant.id;
+    button.textContent = nameOf(tenant.id);
+    button.addEventListener('click', () => selectRole(tenant.id, tenant.token, tenant.id));
+    host.append(button);
+  }
+  const operator = document.createElement('button');
+  operator.type = 'button';
+  operator.dataset.role = 'operator';
+  operator.textContent = 'SCF';
+  operator.addEventListener('click', () => selectRole('operator', state.roster.operatorToken, ''));
+  host.append(operator);
+}
+function buildRange() {
+  const host = document.querySelector('#range');
+  for (const range of RANGES) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.range = range;
+    button.textContent = range;
+    button.addEventListener('click', () => { state.range = range; render(); });
+    host.append(button);
+  }
+}
+async function run(action) {
+  if (state.busy) return;
+  state.busy = true;
+  render();
+  try {
+    if (action === 'page') {
+      const raw = '/accounts/' + ACCOUNT + '/';
+      const response = await fetch('/s/e', { method: 'POST', headers: headers(), body: JSON.stringify({ path: raw }) });
+      const body = await response.json();
+      if (response.ok) {
+        const extra = state.extra[state.tenantId];
+        extra.views += 1;
+        extra.paths['/accounts/:account'] = (extra.paths['/accounts/:account'] || 0) + 1;
+        state.receipt = { tone: 'ok', title: 'Page view stored', rows: [['Sent', raw], ['Stored', body.path]] };
+      } else {
+        state.receipt = { tone: 'bad', title: 'Page view rejected', rows: [['Reason', body.error || String(response.status)]] };
+      }
+    } else if (action === 'api') {
+      const route = '/accounts/' + ACCOUNT + '/payments/42/';
+      const response = await fetch('/v1/traces', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({
+          resourceSpans: [{
+            resource: { attributes: [
+              { key: 'tenant.id', value: { stringValue: state.tenantId } },
+              { key: 'service.name', value: { stringValue: 'payments' } },
+            ] },
+            scopeSpans: [{ spans: [{
+              traceId: 'not-stored',
+              startTimeUnixNano: '0',
+              endTimeUnixNano: '80000000',
+              attributes: [
+                { key: 'http.route', value: { stringValue: route } },
+                { key: 'http.response.status_code', value: { intValue: 200 } },
+              ],
+            }] }],
+          }],
+          resourceLogs: [{ scopeLogs: [{ logRecords: [{ body: { stringValue: 'card number was here' } }] }] }],
+        }),
+      });
+      const body = await response.json();
+      if (response.ok) {
+        const extra = state.extra[state.tenantId];
+        const key = 'payments|/accounts/:account/payments/:id|200';
+        extra.api[key] = (extra.api[key] || 0) + 1;
+        state.receipt = { tone: 'ok', title: 'Request counted', rows: [['Kept', body.retained || 'route, status, latency'], ['Dropped', body.droppedSpans + ' span, ' + body.droppedLogs + ' log'], ['Not returned', 'trace id and log line']] };
+      } else {
+        state.receipt = { tone: 'bad', title: 'Request rejected', rows: [['Reason', body.error || String(response.status)]] };
+      }
+    } else if (action === 'peek') {
+      const other = state.tenantId === 'beta' ? 'alpha' : 'beta';
+      const response = await fetch('/metrics/api?tenant=' + other, { headers: headers() });
+      const body = await response.json();
+      state.receipt = response.status === 403
+        ? { tone: 'blocked', title: 'Refused, as designed', rows: [['Asked for', nameOf(other)], ['Response', '403'], ['Meaning', body.error || 'a project cannot read another project']] }
+        : { tone: 'bad', title: 'Isolation failed', rows: [['Response', String(response.status)]] };
+    }
+  } catch (error) {
+    state.receipt = { tone: 'bad', title: 'Request failed', rows: [['Reason', error instanceof Error ? error.message : 'error']] };
+  } finally {
+    state.busy = false;
+    render();
+  }
+}
+
+document.querySelector('#nav').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-view]');
+  if (!button || button.hidden) return;
+  state.view = button.dataset.view;
+  render();
+});
+stage.addEventListener('click', async (event) => {
+  const action = event.target.closest('[data-action]');
+  const filter = event.target.closest('[data-filter]');
+  const sort = event.target.closest('[data-sort]');
+  if (filter) {
+    state[filter.dataset.filter] = filter.dataset.value;
+    render();
+    return;
+  }
+  if (sort) {
+    state.sort = sort.dataset.sort;
+    render();
+    return;
+  }
+  if (!action || action.disabled) return;
+  if (action.dataset.action === 'compare') {
+    state.view = 'compare';
+    render();
+    return;
+  }
+  if (action.dataset.action === 'copy') {
+    try {
+      await navigator.clipboard.writeText(SNIPPET);
+      action.textContent = 'Copied';
+    } catch {
+      action.textContent = 'Select the tag';
+    }
+    setTimeout(() => { action.textContent = 'Copy'; }, 1200);
+    return;
+  }
+  await run(action.dataset.action);
+});
+document.querySelector('#gate form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const token = document.querySelector('#token').value.trim();
+  const probe = await fetch('/metrics/web?all=1', { headers: { authorization: 'Bearer ' + token } });
+  if (probe.status === 401) {
+    document.querySelector('#gate-error').textContent = 'Unknown token.';
+    return;
+  }
+  state.roster = state.roster ?? { tenants: [] };
+  if (!state.switchReady) buildSwitcher();
+  if (probe.ok) selectRole('operator', token, '');
+  else selectRole('token', token, '');
+});
+
+buildRange();
+const roster = await fetch('/demo/roster');
+if (roster.ok) {
+  state.roster = await roster.json();
+  state.switchReady = true;
+  buildSwitcher();
+  const first = state.roster.tenants[0];
+  selectRole(first.id, first.token, first.id);
+} else {
+  document.querySelector('#gate').hidden = false;
+}
+
+  </script>
+</body>
+</html>

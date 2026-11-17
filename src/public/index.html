@@ -47,24 +47,70 @@
     ::selection { background: var(--accent); color: #1a1428; }
     code, .mono { font-family: var(--mono); font-size: 12.5px; }
     h1, h2, p { margin: 0; }
-    .app { display: grid; grid-template-columns: 228px minmax(0, 1fr); min-height: 100vh; }
+    .app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
     aside {
       position: sticky;
       top: 0;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 22px 14px 18px;
+      gap: 18px;
+      padding: 22px 14px 16px;
       background: var(--rail);
       border-right: 1px solid var(--line);
     }
     .brand { display: flex; gap: 12px; align-items: center; padding: 0 8px; }
     .brand strong { display: block; font-family: var(--serif); font-weight: 520; font-size: 22px; letter-spacing: -0.03em; line-height: 1; }
-    .brand span { color: var(--faint); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
-    nav { display: flex; flex-direction: column; gap: 4px; margin-top: 32px; }
+    .brand span { color: var(--muted); font-size: 12.5px; }
+    .kicker { margin: 8px 8px 0; color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+    .workspace-menu { position: relative; }
+    #workspace, .menu button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 8px 10px;
+    }
+    #workspace { color: var(--text); }
+    #workspace svg { margin-left: auto; opacity: 0.7; }
+    .avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: #1a1428;
+      font-weight: 600;
+      font-size: 13px;
+      flex: none;
+    }
+    .menu {
+      position: absolute;
+      z-index: 5;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 6px;
+      background: #211f1b;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+    }
+    .menu button { border-color: transparent; background: transparent; color: var(--text); }
+    .menu button[aria-pressed="true"], .menu button:hover { background: rgba(212, 196, 255, 0.14); }
+    .workspace-note { margin: -10px 8px 0; color: var(--faint); font-size: 12px; }
+    nav { display: flex; flex-direction: column; gap: 4px; }
     nav button {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
       width: 100%;
       text-align: left;
@@ -74,49 +120,86 @@
       border-radius: 10px;
       padding: 9px 10px;
     }
-    nav button svg { flex: none; opacity: 0.8; }
-    nav button[aria-current="page"] { background: var(--surface-2); color: var(--text); }
+    .nav-label { display: flex; align-items: center; gap: 10px; }
+    nav button svg { flex: none; opacity: 0.85; }
+    nav button[aria-current="page"] { background: rgba(212, 196, 255, 0.16); color: var(--text); }
     nav button:hover:not([aria-current="page"]) { color: var(--text); }
-    .rail-foot { margin-top: auto; padding: 0 10px; color: var(--faint); font-size: 12px; line-height: 1.5; }
-    .workspace { padding: 26px 36px 72px; }
-    .workspace-inner { max-width: 1120px; }
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 24px;
-      margin-bottom: 26px;
-    }
-    .eyebrow { color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
-    h1 { font-family: var(--serif); font-weight: 520; font-size: 40px; letter-spacing: -0.035em; line-height: 1.05; margin-top: 6px; }
-    .lede { color: var(--muted); margin-top: 8px; }
-    .top-tools { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-    .chip {
-      border: 1px solid var(--line-strong);
+    .count {
+      min-width: 22px;
+      padding: 1px 7px;
       border-radius: 999px;
-      padding: 6px 10px;
+      background: var(--surface-2);
       color: var(--muted);
       font-size: 12px;
-      letter-spacing: 0.04em;
+      text-align: center;
     }
-    .viewing { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-    .viewing p { color: var(--faint); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
-    .switch { display: flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; }
-    .switch button { border: 0; background: transparent; color: var(--muted); border-radius: 999px; padding: 6px 12px; white-space: nowrap; }
-    .switch button[aria-pressed="true"] { background: var(--text); color: #16140f; }
+    nav button[aria-current="page"] .count { background: rgba(16, 15, 13, 0.35); color: var(--text); }
+    .promo {
+      margin-top: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+    .promo strong { display: block; margin: 8px 0 6px; font-family: var(--serif); font-weight: 520; font-size: 18px; letter-spacing: -0.03em; }
+    .promo p { margin: 0; color: var(--muted); font-size: 13px; }
+    .workspace { padding: 28px 32px 64px; }
+    .workspace-inner { max-width: 1180px; }
+    .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+    .eyebrow { color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+    h1 { font-family: var(--serif); font-weight: 520; font-size: 36px; letter-spacing: -0.035em; line-height: 1.05; margin-top: 8px; }
+    .lede { color: var(--muted); margin-top: 8px; }
+    .top-tools { display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-top: 8px; }
+    .ghost, .primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+    .ghost { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); }
+    .primary { border: 0; background: var(--accent); color: #1a1428; font-weight: 600; }
+    .primary .free { font-weight: 500; padding-left: 8px; border-left: 1px solid rgba(26, 20, 40, 0.22); }
+    .banner {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin: 18px 0 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(212, 196, 255, 0.28);
+      border-radius: 12px;
+      background: rgba(212, 196, 255, 0.08);
+      color: var(--muted);
+    }
+    .banner strong { color: var(--text); font-weight: 600; }
+    .banner svg { flex: none; margin-top: 2px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .tabs { display: inline-flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+    .tabs button { border: 0; background: transparent; color: var(--muted); border-radius: 9px; padding: 7px 14px; }
+    .tabs button[aria-current="page"] { background: var(--surface-2); color: var(--text); }
+    .range select {
+      appearance: none;
+      border: 1px solid var(--line-strong);
+      background: var(--surface) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4.2 6 8l4-3.8' fill='none' stroke='%23a8a295' stroke-width='1.4'/></svg>") no-repeat right 12px center;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 34px 8px 12px;
+    }
     .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-    .kpi, .panel, .card, .receipt, .install {
+    .kpi, .panel, .card, .receipt, .install, .modal form {
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 18px;
+      border-radius: 14px;
     }
-    .kpi { padding: 16px 18px 18px; }
-    .kpi .label, .panel h2, .card h2, .install h2 {
-      color: var(--faint);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+    .kpi { padding: 16px 16px 18px; }
+    .kpi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .kpi-top svg { color: var(--faint); }
+    .kpi .label, .panel h2, .card h2, .install h2, .modal h2 {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
     }
     .kpi .value { font-family: var(--serif); font-size: 36px; font-weight: 520; letter-spacing: -0.04em; margin-top: 12px; font-variant-numeric: tabular-nums; line-height: 1; }
     .kpi .value.warn { color: var(--warn); }
@@ -134,7 +217,17 @@
     .split { grid-template-columns: 1fr 1fr; }
     .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .panel, .install { padding: 18px 18px 16px; }
-    .panel h2, .install h2 { margin-bottom: 14px; }
+    .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+    .panel-head h2 { margin: 0; color: var(--text); font-size: 16px; font-weight: 600; }
+    .panel-head p, .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .badge { border: 1px solid var(--line-strong); border-radius: 999px; padding: 4px 8px; color: var(--faint); font-size: 12px; white-space: nowrap; }
+    .panel h2, .install h2, .modal h2 { margin-bottom: 14px; }
+    .plot { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; align-items: stretch; }
+    .yticks { display: flex; flex-direction: column; justify-content: space-between; color: var(--faint); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+    .modal { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 24px; background: rgba(8, 7, 6, 0.72); }
+    .modal form { width: min(420px, 100%); padding: 18px; }
+    .modal input { width: 100%; margin: 8px 0 12px; border: 1px solid var(--line-strong); background: #100f0d; border-radius: 10px; padding: 10px 12px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
     .stack { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--surface-2); }
     .stack span { display: block; height: 100%; }
     .c0 { background: #d4c4ff; }
@@ -234,11 +327,10 @@
     @media (max-width: 980px) {
       .app { grid-template-columns: 1fr; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
-      nav { flex-direction: row; overflow: auto; margin-top: 16px; }
-      .rail-foot { display: none; }
+      nav { flex-direction: row; overflow: auto; }
+      .promo { display: none; }
       .kpis, .two, .split { grid-template-columns: 1fr 1fr; }
-      .top { align-items: flex-start; flex-direction: column; }
-      .viewing { align-items: flex-start; }
+      .top, .toolbar { align-items: flex-start; flex-direction: column; }
     }
     @media (max-width: 680px) {
       .workspace { padding: 20px 16px 48px; }
@@ -262,45 +354,83 @@
   <div id="app" class="app" hidden>
     <aside>
       <div class="brand">
-        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
           <path d="M12 3.2 20.5 20.2H3.5Z" fill="none" stroke="#d4c4ff" stroke-width="1.5" />
           <path d="M12 3.2 12 20.2" stroke="#f0a090" stroke-width="1.3" />
         </svg>
         <div>
           <strong>Prism</strong>
-          <span>Analytics</span>
+          <span>ecosystem analytics</span>
         </div>
       </div>
+      <div>
+        <p class="kicker">Workspace</p>
+        <div class="workspace-menu">
+          <button type="button" id="workspace" aria-haspopup="listbox" aria-expanded="false" aria-controls="switcher">
+            <span class="avatar" id="workspace-mark">N</span>
+            <span id="workspace-name">Northwind</span>
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5.2 7 9l4-3.8" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+          </button>
+          <div id="switcher" class="menu" role="listbox" hidden></div>
+        </div>
+      </div>
+      <p id="workspace-note" class="workspace-note">Project · simulated</p>
       <nav id="nav" aria-label="Sections">
-        <button type="button" data-view="overview">Overview</button>
-        <button type="button" data-view="web">Web</button>
-        <button type="button" data-view="api">API</button>
-        <button type="button" data-view="compare" id="nav-compare">Compare</button>
+        <button type="button" data-view="overview"><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor"/><rect x="9" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor"/><rect x="2" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor"/><rect x="9" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor"/></svg>Overview</span></button>
+        <button type="button" data-view="web"><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.2" fill="none" stroke="currentColor"/><path d="M3 8h10M8 2.8c1.6 1.6 1.6 8.8 0 10.4M8 2.8c-1.6 1.6-1.6 8.8 0 10.4" fill="none" stroke="currentColor"/></svg>Web analytics</span></button>
+        <button type="button" data-view="api"><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12.5 6 8l2.2 2.2L14 4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>API analytics</span></button>
+        <button type="button" data-view="compare"><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="3" rx="1" fill="none" stroke="currentColor"/><rect x="2" y="8" width="12" height="5" rx="1" fill="none" stroke="currentColor"/></svg>Projects</span><span id="project-count" class="count">2</span></button>
+        <button type="button" data-view="integration"><span class="nav-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4.5 2.5 8 6 11.5M10 4.5 13.5 8 10 11.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>Integration</span></button>
       </nav>
-      <p class="rail-foot">No cookies. Span and log bodies are dropped on ingest. A project cannot read another project.</p>
+      <div class="promo">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2.2 15.5 5v4.2c0 3.4-2.6 5.6-6.5 6.6-3.9-1-6.5-3.2-6.5-6.6V5Z" fill="none" stroke="#d4c4ff" stroke-width="1.3"/></svg>
+        <strong>Built for the ecosystem.</strong>
+        <p>Free analytics. Free enrollment. Every Stellar project belongs.</p>
+      </div>
     </aside>
     <div class="workspace">
       <div class="workspace-inner">
         <header class="top">
           <div>
-            <p class="eyebrow">Web and API analytics</p>
-            <h1 id="title">Prism</h1>
+            <p class="eyebrow">Stellar Community Fund</p>
+            <h1 id="title">Ecosystem overview</h1>
             <p id="lede" class="lede"></p>
           </div>
           <div class="top-tools">
-            <div class="viewing">
-              <p>Range</p>
-              <div id="range" class="switch" role="group" aria-label="Time range"></div>
-            </div>
-            <div class="viewing">
-              <p>Viewing</p>
-              <div id="switcher" class="switch" role="group" aria-label="Viewing"></div>
-            </div>
+            <button class="ghost" type="button" id="export"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 2v7M4.2 6.2 7 9l2.8-2.8M2.5 11.5h9" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>Export</button>
+            <button class="primary" type="button" id="add-project">+ Add project <span class="free">Free</span></button>
           </div>
         </header>
+        <div class="banner">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8 13.2 4v3.4c0 2.8-2.1 4.6-5.2 5.5-3.1-.9-5.2-2.7-5.2-5.5V4Z" fill="none" stroke="#d4c4ff" stroke-width="1.2"/></svg>
+          <p><strong>Proof of concept.</strong> Charts and totals are sample data. Switching workspace previews a project or the SCF operator. Integration runs the live collector.</p>
+        </div>
+        <div class="toolbar">
+          <div id="tabs" class="tabs" role="tablist" aria-label="Sections">
+            <button type="button" data-view="overview">Overview</button>
+            <button type="button" data-view="web">Web</button>
+            <button type="button" data-view="api">API</button>
+          </div>
+          <label class="range">
+            <span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Time range</span>
+            <select id="range" aria-label="Time range"></select>
+          </label>
+        </div>
         <div id="stage"></div>
       </div>
     </div>
+  </div>
+  <div id="enroll" class="modal" hidden>
+    <form class="panel">
+      <h2>Add a project</h2>
+      <p class="lede">Free enrollment. An operator key mints a project token.</p>
+      <input id="enroll-id" name="id" autocomplete="off" placeholder="Project id" />
+      <div class="modal-actions">
+        <button class="ghost" type="button" id="enroll-cancel">Cancel</button>
+        <button class="primary" type="submit">Create</button>
+      </div>
+      <p id="enroll-result" class="caption"></p>
+    </form>
   </div>
   <script type="module">
 const ACCOUNT = 'G' + 'A'.repeat(55);
@@ -503,8 +633,42 @@ function change(value, goodWhenUp) {
   const good = goodWhenUp ? up : !up;
   return '<span class="' + (good ? 'up' : 'down') + '">' + (up ? '↑ ' : '↓ ') + Math.abs(value * 100).toFixed(1) + '%</span> vs ' + PRIOR[state.range];
 }
-function kpi(label, value, hint) {
-  return '<article class="kpi"><p class="label">' + label + '</p><p class="value">' + value + '</p><p class="hint">' + hint + '</p></article>';
+const ICONS = {
+  visitors: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.2" fill="none" stroke="currentColor"/><path d="M3.5 13.2c.7-2.2 2.4-3.3 4.5-3.3s3.8 1.1 4.5 3.3" fill="none" stroke="currentColor"/></svg>',
+  views: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.2" fill="none" stroke="currentColor"/><path d="M3 8h10" fill="none" stroke="currentColor"/></svg>',
+  api: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12.5 6 8l2.2 2.2L14 4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
+  latency: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13V7M8 13V3M13 13V9" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
+};
+function kpi(label, value, hint, icon) {
+  return '<article class="kpi"><div class="kpi-top"><p class="label">' + label + '</p>' + (icon || '') + '</div><p class="value">' + value + '</p><p class="hint">' + hint + '</p></article>';
+}
+function overviewKpis(data) {
+  return '<section class="kpis">' +
+    kpi('Unique visitors', num(data.visitors), 'Daily distinct sessions', ICONS.visitors) +
+    kpi('Page views', num(data.views), 'Frontend activity', ICONS.views) +
+    kpi('API requests', num(data.requests), 'Across normalized routes', ICONS.api) +
+    kpi('API latency · p95', ms(data.p95), 'Merged histogram estimate', ICONS.latency) +
+    '</section>';
+}
+function columnChart(values, label) {
+  const width = 720;
+  const height = 220;
+  const max = Math.max(...values, 1);
+  const gap = 5;
+  const barWidth = (width - gap * (values.length + 1)) / values.length;
+  const bars = values.map((value, index) => {
+    const bar = Math.max(2, (value / max) * (height - 4));
+    const x = gap + index * (barWidth + gap);
+    return '<rect x="' + x.toFixed(1) + '" y="' + (height - bar).toFixed(1) + '" width="' + Math.max(barWidth, 1).toFixed(1) + '" height="' + bar.toFixed(1) + '" rx="2" fill="#d4c4ff"/>';
+  }).join('');
+  const ticks = [1, 0.67, 0.33, 0].map((ratio) => '<span>' + num(Math.round(max * ratio)) + '</span>').join('');
+  return '<div class="plot"><div class="yticks">' + ticks + '</div><svg class="chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="' + esc(label) + '">' + bars + '</svg></div><div class="axis" style="margin-left:52px">' + AXIS[state.range].map((item) => '<span>' + item + '</span>').join('') + '</div>';
+}
+function activity(ids) {
+  const values = ids.map((id) => stats(id).seriesViews);
+  const totals = values[0].map((_, index) => values.reduce((summed, series) => summed + series[index], 0));
+  const subtitle = ids.length > 1 ? 'Daily page views across all projects' : 'Daily page views for ' + nameOf(ids[0]);
+  return '<section class="panel" style="margin-top:12px"><div class="panel-head"><div><h2>Web activity</h2><p>' + esc(subtitle) + '</p></div><span class="badge">Sample data</span></div>' + columnChart(totals, 'Page views') + '</section>';
 }
 function webKpis(data) {
   return '<section class="kpis">' +
@@ -668,35 +832,35 @@ function render() {
   const data = headline(ids);
   const animate = state.painted !== state.view + state.role + state.range;
   state.painted = state.view + state.role + state.range;
-  document.querySelector('#nav-compare').hidden = !operator;
-  for (const button of document.querySelectorAll('#nav button')) {
+  const current = operator ? null : PROFILES[state.tenantId];
+  document.querySelector('#workspace-mark').textContent = operator ? 'S' : (current?.name?.[0] ?? 'P');
+  document.querySelector('#workspace-name').textContent = operator ? 'SCF · All projects' : (current?.name ?? 'Project');
+  document.querySelector('#workspace-note').textContent = operator ? 'SCF operator · simulated' : (current?.detail ?? 'Project') + ' · simulated';
+  document.querySelector('#project-count').textContent = String(state.roster?.tenants.length ?? 0);
+  document.querySelector('#range').value = state.range;
+  for (const button of document.querySelectorAll('#nav button, #tabs button')) {
     if (button.dataset.view === state.view) button.setAttribute('aria-current', 'page');
     else button.removeAttribute('aria-current');
   }
   for (const button of document.querySelectorAll('#switcher button')) {
     button.setAttribute('aria-pressed', button.dataset.role === state.role ? 'true' : 'false');
   }
-  for (const button of document.querySelectorAll('#range button')) {
-    button.setAttribute('aria-pressed', button.dataset.range === state.range ? 'true' : 'false');
-  }
-  const current = operator ? null : PROFILES[state.tenantId];
   const copy = {
-    overview: operator ? ['Ecosystem', 'Every enrolled project, on the same definitions.'] : [current?.name ?? 'Project', (current?.detail ?? 'This project') + ' · other projects stay hidden'],
-    web: ['Web', operator ? 'Pages, referrers, country, device, and browser across projects.' : 'Pages, referrers, country, device, and browser.'],
-    api: ['API', 'Volume, status, and latency for the selected range.'],
-    compare: ['Compare', 'Sort, filter, and read two projects side by side.'],
+    overview: operator ? ['Ecosystem overview', 'A shared view of the projects moving Stellar forward.'] : [(current?.name ?? 'Project') + ' overview', (current?.detail ?? 'This project') + '. Other projects stay hidden.'],
+    web: ['Web analytics', operator ? 'Pages, referrers, country, device, and browser across projects.' : 'Pages, referrers, country, device, and browser.'],
+    api: ['API analytics', 'Volume, status, and latency for the selected range.'],
+    compare: ['Projects', operator ? 'Sort, filter, and read projects side by side.' : 'This key can see only its own project.'],
+    integration: ['Integration', 'The pinned script, and the live collector.'],
   }[state.view];
   title.textContent = copy[0];
   lede.textContent = copy[1];
   document.title = copy[0] + ' · Prism Analytics';
   let html = '';
   if (state.view === 'overview') {
-    html = webKpis(data) + '<section class="panel" style="margin-top:12px"><h2>Traffic</h2>' + trafficChart(ids) + '</section>' +
-      breakdown(ids) + apiKpis(data) + (operator ? '<div class="layout split" style="margin-top:12px">' + ids.map(projectCard).join('') + '</div>' : '') +
-      '<div class="layout" style="margin-top:12px">' + actions() + '</div>';
+    html = overviewKpis(data) + activity(ids);
   } else if (state.view === 'web') {
     const rows = ids.flatMap((id) => stats(id).pages);
-    html = (operator ? '' : install()) + webKpis(data) + '<section class="panel" style="margin-top:12px"><h2>Paths</h2>' + webTable(rows, operator) +
+    html = webKpis(data) + '<section class="panel" style="margin-top:12px"><h2>Paths</h2>' + webTable(rows, operator) +
       '<p class="caption">Account, contract, and muxed addresses collapse, so one key does not become its own row.</p></section>' +
       '<div class="layout two"><section class="panel"><h2>Referrers</h2>' + bars(merged(ids, 'referrers'), false) +
       '</section><section class="panel"><h2>Countries</h2>' + bars(merged(ids, 'countries'), false) +
@@ -705,7 +869,7 @@ function render() {
       '<div style="margin-top:16px">' + bars(merged(ids, 'browsers'), false) + '</div></section>';
   } else if (state.view === 'api') {
     html = apiKpis(data) + '<section class="panel" style="margin-top:12px"><h2>Volume</h2>' + volumeChart(ids) + '</section><section class="panel" style="margin-top:12px"><h2>Routes</h2>' + filters(operator) + apiTable(visibleApi(ids), operator) + '</section>';
-  } else {
+  } else if (state.view === 'compare' && ids.length > 1) {
     const [left, right] = ids.map(stats);
     const metrics = [
       ['Pageviews', num(left.views), num(right.views)],
@@ -721,6 +885,10 @@ function render() {
     html = '<div class="layout split">' + ids.map(projectCard).join('') + '</div><section class="panel" style="margin-top:12px"><h2>Same numbers</h2><div class="table-wrap"><table><thead><tr><th>Metric</th><th>' + esc(nameOf(left.id)) + '</th><th>' + esc(nameOf(right.id)) + '</th></tr></thead><tbody>' +
       metrics.map((row) => '<tr><td>' + row[0] + '</td><td class="num">' + esc(row[1]) + '</td><td class="num">' + esc(row[2]) + '</td></tr>').join('') +
       '</tbody></table></div></section><section class="panel" style="margin-top:12px"><h2>Routes</h2>' + filters(true) + apiTable(visibleApi(ids), true) + '</section>';
+  } else if (state.view === 'compare') {
+    html = ids.map(projectCard).join('');
+  } else {
+    html = install() + '<div class="layout" style="margin-top:12px">' + actions() + '</div>';
   }
   stage.innerHTML = html;
   stage.classList.toggle('enter', animate);
@@ -731,39 +899,44 @@ function selectRole(role, token, tenantId) {
   state.tenantId = tenantId || '';
   state.project = 'all';
   state.receipt = null;
-  if (state.view === 'compare' && role !== 'operator') state.view = 'overview';
   document.querySelector('#app').hidden = false;
   document.querySelector('#gate').hidden = true;
   render();
+}
+function closeWorkspace() {
+  document.querySelector('#switcher').hidden = true;
+  document.querySelector('#workspace').setAttribute('aria-expanded', 'false');
+}
+function workspaceItem(role, token, tenantId, label, mark) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.dataset.role = role;
+  button.innerHTML = '<span class="avatar">' + mark + '</span><span>' + label + '</span>';
+  button.addEventListener('click', () => {
+    closeWorkspace();
+    selectRole(role, token, tenantId);
+  });
+  return button;
 }
 function buildSwitcher() {
   const host = document.querySelector('#switcher');
   host.replaceChildren();
   for (const tenant of state.roster.tenants) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.dataset.role = tenant.id;
-    button.textContent = nameOf(tenant.id);
-    button.addEventListener('click', () => selectRole(tenant.id, tenant.token, tenant.id));
-    host.append(button);
+    const profile = PROFILES[tenant.id];
+    host.append(workspaceItem(tenant.id, tenant.token, tenant.id, profile?.name ?? tenant.id, (profile?.name ?? tenant.id)[0]));
   }
-  const operator = document.createElement('button');
-  operator.type = 'button';
-  operator.dataset.role = 'operator';
-  operator.textContent = 'SCF';
-  operator.addEventListener('click', () => selectRole('operator', state.roster.operatorToken, ''));
-  host.append(operator);
+  host.append(workspaceItem('operator', state.roster.operatorToken, '', 'SCF · All projects', 'S'));
 }
 function buildRange() {
+  const labels = { '24h': 'Last 24 hours', '7d': 'Last 7 days', '30d': 'Last 30 days', '90d': 'Last 90 days' };
   const host = document.querySelector('#range');
   for (const range of RANGES) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.dataset.range = range;
-    button.textContent = range;
-    button.addEventListener('click', () => { state.range = range; render(); });
-    host.append(button);
+    const option = document.createElement('option');
+    option.value = range;
+    option.textContent = labels[range];
+    host.append(option);
   }
+  host.addEventListener('change', () => { state.range = host.value; render(); });
 }
 async function run(action) {
   if (state.busy) return;
@@ -831,11 +1004,45 @@ async function run(action) {
   }
 }
 
-document.querySelector('#nav').addEventListener('click', (event) => {
+function openView(event) {
   const button = event.target.closest('[data-view]');
   if (!button || button.hidden) return;
   state.view = button.dataset.view;
   render();
+}
+document.querySelector('#nav').addEventListener('click', openView);
+document.querySelector('#tabs').addEventListener('click', openView);
+document.querySelector('#workspace').addEventListener('click', () => {
+  const menu = document.querySelector('#switcher');
+  menu.hidden = !menu.hidden;
+  document.querySelector('#workspace').setAttribute('aria-expanded', String(!menu.hidden));
+});
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.workspace-menu')) closeWorkspace();
+});
+document.querySelector('#export').addEventListener('click', () => {
+  const data = headline(scopeIds());
+  const file = new Blob([JSON.stringify({ range: state.range, view: state.view, note: 'Sample dashboard numbers.', ...data }, null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(file);
+  link.download = 'prism-analytics-' + state.range + '.json';
+  link.click();
+  URL.revokeObjectURL(link.href);
+});
+document.querySelector('#add-project').addEventListener('click', () => {
+  document.querySelector('#enroll-result').textContent = '';
+  document.querySelector('#enroll').hidden = false;
+  document.querySelector('#enroll-id').focus();
+});
+document.querySelector('#enroll-cancel').addEventListener('click', () => { document.querySelector('#enroll').hidden = true; });
+document.querySelector('#enroll form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const id = document.querySelector('#enroll-id').value.trim();
+  const result = document.querySelector('#enroll-result');
+  if (!id) { result.textContent = 'A project id is required.'; return; }
+  const response = await fetch('/tenants', { method: 'POST', headers: headers(), body: JSON.stringify({ id }) });
+  const body = await response.json();
+  result.textContent = response.ok ? 'Token minted for ' + id + ': ' + body.token : (body.error || 'Could not enroll.');
 });
 stage.addEventListener('click', async (event) => {
   const action = event.target.closest('[data-action]');
@@ -889,8 +1096,7 @@ if (roster.ok) {
   state.roster = await roster.json();
   state.switchReady = true;
   buildSwitcher();
-  const first = state.roster.tenants[0];
-  selectRole(first.id, first.token, first.id);
+  selectRole('operator', state.roster.operatorToken, '');
 } else {
   document.querySelector('#gate').hidden = false;
 }

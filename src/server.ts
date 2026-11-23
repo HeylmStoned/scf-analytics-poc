@@ -53,10 +53,13 @@ function canRead(principal: Principal, tenantId: string | undefined, all: boolea
   return principal.tenantId;
 }
 
-export async function startServer(options: { port?: number; store: Store; demo?: DemoRoster }): Promise<{ url: string; close: () => Promise<void> }> {
+export async function startServer(options: { port?: number; host?: string; store: Store; demo?: DemoRoster }): Promise<{ url: string; close: () => Promise<void> }> {
   const server = createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+      if (req.method === 'GET' && url.pathname === '/health') {
+        return send(res, 200, { ok: true, service: 'pulse-otlp-collector' });
+      }
       if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
         res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
         res.end(dashboardPage());
@@ -124,11 +127,12 @@ export async function startServer(options: { port?: number; store: Store; demo?:
     }
   });
 
-  await new Promise<void>((resolve) => server.listen(options.port ?? 0, '127.0.0.1', resolve));
+  const host = options.host ?? '127.0.0.1';
+  await new Promise<void>((resolve) => server.listen(options.port ?? 0, host, resolve));
   const address = server.address();
   const port = typeof address === 'object' && address ? address.port : options.port;
   return {
-    url: `http://127.0.0.1:${port}`,
+    url: `http://${host === '0.0.0.0' ? '127.0.0.1' : host}:${port}`,
     close: () => new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve()))),
   };
 }
@@ -163,15 +167,40 @@ async function handleSignals(store: Store, principal: Principal, req: IncomingMe
   });
 }
 
+function tenantRoster(operatorToken: string, base: DemoRoster): DemoRoster {
+  const fromEnv = (process.env.TENANT_TOKENS ?? '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const split = part.indexOf(':');
+      if (split <= 0) return null;
+      return { id: part.slice(0, split).trim(), token: part.slice(split + 1).trim() };
+    })
+    .filter((row): row is { id: string; token: string } => Boolean(row?.id && row.token));
+
+  const tenants = fromEnv.length
+    ? fromEnv
+    : base.tenants.map((tenant) => ({
+        id: tenant.id,
+        token: process.env[`TENANT_TOKEN_${tenant.id.toUpperCase()}`] ?? tenant.token,
+      }));
+
+  return { operatorToken, tenants };
+}
+
 async function main(): Promise<void> {
   const { DEMO_ROSTER, seedDemo } = await import('./seed.ts');
   const operatorToken = process.env.OPERATOR_TOKEN ?? DEMO_ROSTER.operatorToken;
   const databaseUrl = process.env.DATABASE_URL;
   const store = databaseUrl ? await PgStore.connect(databaseUrl, operatorToken) : new MemoryStore(operatorToken);
-  const demo = { ...DEMO_ROSTER, operatorToken };
-  await seedDemo(store, demo);
-  const server = await startServer({ port: Number(process.env.PORT ?? 8787), store, demo });
-  console.log(`open ${server.url}`);
+  const demo = tenantRoster(operatorToken, DEMO_ROSTER);
+  for (const tenant of demo.tenants) await store.addTenant(tenant.id, tenant.token);
+  if (process.env.SEED_DEMO !== '0') await seedDemo(store, demo);
+  const port = Number(process.env.PORT ?? 8787);
+  const host = process.env.HOST ?? '0.0.0.0';
+  const server = await startServer({ port, host, store, demo });
+  console.log(`pulse otlp collector listening on ${server.url}`);
 }
 
 const isDirect = process.argv[1]?.endsWith('server.ts');
